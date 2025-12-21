@@ -70,19 +70,33 @@
     }, CONFIG.blinkInterval);
   }
   
-  // Blinken stoppen und Schritt als fertig markieren (dunkelgrau)
-  function stopBlinkingAndMarkDone(stepNumber) {
-    if (blinkIntervalId) {
-      clearInterval(blinkIntervalId);
-      blinkIntervalId = null;
-    }
-    
-    const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
-    if (stepElement) {
-      stepElement.style.color = CONFIG.darkGrayColor;
-      stepElement.style.transition = 'color 0.3s ease-in-out';
-    }
+// Blinken stoppen und Schritt als fertig markieren (schwarz + Icon-Wechsel)
+function stopBlinkingAndMarkDone(stepNumber) {
+  if (blinkIntervalId) {
+    clearInterval(blinkIntervalId);
+    blinkIntervalId = null;
   }
+  
+  // Text auf Schwarz setzen
+  const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
+  if (stepElement) {
+    stepElement.style.color = '#000000';
+    stepElement.style.transition = 'color 0.3s ease-in-out';
+  }
+  
+  // Icon von grau auf grün wechseln
+  const grayIcon = document.querySelector(`[data-loading-icon="${stepNumber}"][data-icon-state="gray"]`);
+  const greenIcon = document.querySelector(`[data-loading-icon="${stepNumber}"][data-icon-state="green"]`);
+  
+  if (grayIcon) {
+    grayIcon.style.display = 'none';
+  }
+  
+  if (greenIcon) {
+    greenIcon.style.display = 'block';
+  }
+}
+
   
   // Progress animieren
   function animateProgress(targetPercent, duration, onComplete) {
@@ -281,7 +295,16 @@
     document.querySelectorAll('[data-loading-step]').forEach(el => {
       el.style.color = CONFIG.grayColor;
     });
-    
+
+    // Initial: Alle grünen Icons verstecken, graue Icons zeigen
+document.querySelectorAll('[data-icon-state="green"]').forEach(icon => {
+  icon.style.display = 'none';
+});
+
+document.querySelectorAll('[data-icon-state="gray"]').forEach(icon => {
+  icon.style.display = 'block';
+});
+
     // Popup initial verstecken
     const popup = document.querySelector('[data-loading-popup="true"]');
     if (popup) {
