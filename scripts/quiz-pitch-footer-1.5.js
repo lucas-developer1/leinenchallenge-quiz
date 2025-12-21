@@ -72,6 +72,8 @@
   
 // Blinken stoppen und Schritt als fertig markieren (schwarz + Icon-Wechsel)
 function stopBlinkingAndMarkDone(stepNumber) {
+  console.log(`🎯 Markiere Schritt ${stepNumber} als fertig`);
+  
   if (blinkIntervalId) {
     clearInterval(blinkIntervalId);
     blinkIntervalId = null;
@@ -80,22 +82,29 @@ function stopBlinkingAndMarkDone(stepNumber) {
   // Text auf Schwarz setzen
   const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
   if (stepElement) {
+    console.log(`✅ Setze Text ${stepNumber} auf schwarz`);
     stepElement.style.color = '#000000';
     stepElement.style.transition = 'color 0.3s ease-in-out';
+  } else {
+    console.warn(`⚠️ Text-Element für Schritt ${stepNumber} nicht gefunden`);
   }
   
   // Icon von grau auf grün wechseln
   const grayIcon = document.querySelector(`[data-loading-icon="${stepNumber}"][data-icon-state="gray"]`);
   const greenIcon = document.querySelector(`[data-loading-icon="${stepNumber}"][data-icon-state="green"]`);
   
-  if (grayIcon) {
+  if (grayIcon && greenIcon) {
+    console.log(`✅ Wechsle Icon ${stepNumber} von grau zu grün`);
     grayIcon.style.display = 'none';
-  }
-  
-  if (greenIcon) {
     greenIcon.style.display = 'block';
+  } else {
+    console.warn(`⚠️ Icons für Schritt ${stepNumber} nicht gefunden:`, {
+      grayIcon: !!grayIcon,
+      greenIcon: !!greenIcon
+    });
   }
 }
+
 
   
   // Progress animieren
@@ -190,39 +199,44 @@ function stopBlinkingAndMarkDone(stepNumber) {
     });
   }
   
-  // Schritt 2
-  function startStep2() {
-    currentStep = 2;
-    console.log('🚀 Schritt 2 startet');
-    startBlinking(2);
-    
-    animateProgress(CONFIG.step2.targetPercent, CONFIG.step2.duration, () => {
-      console.log('✅ Schritt 2 fertig');
-      stopBlinkingAndMarkDone(2);
-      
-      // Popup anzeigen
-      setTimeout(() => {
-        showPopup();
-      }, 300);
-    });
-  }
+// Schritt 2
+function startStep2() {
+  currentStep = 2;
+  console.log('🚀 Schritt 2 startet');
+  startBlinking(2);
   
-  // Schritt 3
-  function startStep3() {
-    currentStep = 3;
-    console.log('🚀 Schritt 3 startet');
-    startBlinking(3);
+  animateProgress(CONFIG.step2.targetPercent, CONFIG.step2.duration, () => {
+    console.log('✅ Schritt 2 fertig');
     
-    animateProgress(CONFIG.step3.targetPercent, CONFIG.step3.duration, () => {
-      console.log('✅ Schritt 3 fertig - 100% erreicht');
-      stopBlinkingAndMarkDone(3);
-      
-      // Automatisch zum nächsten Finish-Flow Step
-      setTimeout(() => {
-        triggerNextStep();
-      }, 500);
-    });
-  }
+    // Erst Blinken stoppen und Status setzen
+    stopBlinkingAndMarkDone(2);
+    
+    setTimeout(() => {
+      showPopup();
+    }, 300); 
+  });
+}
+
+  
+// Schritt 3
+function startStep3() {
+  currentStep = 3;
+  console.log('🚀 Schritt 3 startet');
+  startBlinking(3);
+  
+  animateProgress(CONFIG.step3.targetPercent, CONFIG.step3.duration, () => {
+    console.log('✅ Schritt 3 fertig - 100% erreicht');
+    
+    // Erst Status setzen
+    stopBlinkingAndMarkDone(3);
+    
+    // Dann warten bevor weiter
+    setTimeout(() => {
+      triggerNextStep();
+    }, 500);
+  });
+}
+
   
   // Next Step triggern
   function triggerNextStep() {
