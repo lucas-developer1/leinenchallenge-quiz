@@ -32,6 +32,7 @@
   let blinkIntervalId = null;
   let isBlinkDark = false;
   let spinnerInitialized = false;
+  let completedSteps = [];
   
   // Progress Circle aktualisieren
   function updateProgressCircle(percent) {
@@ -48,27 +49,31 @@
     progressPercentage.textContent = Math.round(percent) + '%';
   }
   
-  // Schritt-Text blinken lassen
-  function startBlinking(stepNumber) {
-    const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
-    if (!stepElement) return;
+// Schritt-Text blinken lassen
+function startBlinking(stepNumber) {
+  const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
+  if (!stepElement) return;
+  
+  // Alle anderen Schritte auf grau setzen (AUSSER die fertigen!)
+  document.querySelectorAll('[data-loading-step]').forEach(el => {
+    const elStepNumber = parseInt(el.getAttribute('data-loading-step'));
     
-    // Alle anderen Schritte auf grau setzen
-    document.querySelectorAll('[data-loading-step]').forEach(el => {
-      if (el.getAttribute('data-loading-step') !== stepNumber.toString()) {
-        el.style.color = CONFIG.grayColor;
-      }
-    });
-    
-    // Blinken starten
-    if (blinkIntervalId) clearInterval(blinkIntervalId);
-    
-    blinkIntervalId = setInterval(() => {
-      isBlinkDark = !isBlinkDark;
-      stepElement.style.color = isBlinkDark ? CONFIG.darkGrayColor : CONFIG.grayColor;
-      stepElement.style.transition = 'color 0.2s ease-in-out';
-    }, CONFIG.blinkInterval);
-  }
+    // Nur Schritte ändern, die NICHT fertig sind und NICHT der aktuelle sind
+    if (elStepNumber !== stepNumber && !completedSteps.includes(elStepNumber)) {
+      el.style.color = CONFIG.grayColor;
+    }
+  });
+  
+  // Blinken starten
+  if (blinkIntervalId) clearInterval(blinkIntervalId);
+  
+  blinkIntervalId = setInterval(() => {
+    isBlinkDark = !isBlinkDark;
+    stepElement.style.color = isBlinkDark ? CONFIG.darkGrayColor : CONFIG.grayColor;
+    stepElement.style.transition = 'color 0.2s ease-in-out';
+  }, CONFIG.blinkInterval);
+}
+
   
 // Blinken stoppen und Schritt als fertig markieren (schwarz + Icon-Wechsel)
 function stopBlinkingAndMarkDone(stepNumber) {
@@ -77,6 +82,11 @@ function stopBlinkingAndMarkDone(stepNumber) {
   if (blinkIntervalId) {
     clearInterval(blinkIntervalId);
     blinkIntervalId = null;
+  }
+  
+  // Schritt als fertig markieren
+  if (!completedSteps.includes(stepNumber)) {
+    completedSteps.push(stepNumber);
   }
   
   // Text auf Schwarz setzen
@@ -104,6 +114,7 @@ function stopBlinkingAndMarkDone(stepNumber) {
     });
   }
 }
+
 
 
   
@@ -304,6 +315,7 @@ function startStep3() {
     }
     
     spinnerInitialized = true;
+    completedSteps = [];
     
     // Initial: Alle Schritte grau
     document.querySelectorAll('[data-loading-step]').forEach(el => {
