@@ -11,16 +11,16 @@
   // Konfiguration
   const CONFIG = {
     step1: {
-      targetPercent: 16, // 15-17%
+      targetPercent: 24, // 15-17%
       duration: 1800 // 1.8 Sekunden
     },
     step2: {
-      targetPercent: 40,
+      targetPercent: 60,
       duration: 2500 // 2.5 Sekunden
     },
     step3: {
       targetPercent: 100,
-      duration: 5700 // 5.7 Sekunden
+      duration: 5000 // 5.7 Sekunden
     },
     blinkInterval: 500, // 0.5 Sekunden
     grayColor: '#9ca3af',
@@ -195,38 +195,50 @@ function stopBlinkingAndMarkDone(stepNumber) {
     }, 300);
   }
   
-  // Schritt 1
-  function startStep1() {
-    currentStep = 1;
-    console.log('🚀 Schritt 1 startet');
-    startBlinking(1);
-    
-    animateProgress(CONFIG.step1.targetPercent, CONFIG.step1.duration, () => {
-      console.log('✅ Schritt 1 fertig');
-      stopBlinkingAndMarkDone(1);
-      setTimeout(() => {
-        startStep2();
-      }, 200);
-    });
-  }
+// Schritt 1
+function startStep1() {
+  currentStep = 1;
+  console.log('🚀 Schritt 1 startet');
+  startBlinking(1);
   
+  // Schritt 1 als fertig markieren kurz vor Ende
+  const earlyMarkDoneDelay = CONFIG.step1.duration - 300;
+  
+  setTimeout(() => {
+    stopBlinkingAndMarkDone(1);
+  }, earlyMarkDoneDelay);
+  
+  animateProgress(CONFIG.step1.targetPercent, CONFIG.step1.duration, () => {
+    console.log('✅ Schritt 1 fertig');
+    setTimeout(() => {
+      startStep2();
+    }, 200);
+  });
+}
+
 // Schritt 2
 function startStep2() {
   currentStep = 2;
   console.log('🚀 Schritt 2 startet');
   startBlinking(2);
   
+  // Schritt 2 als fertig markieren kurz vor Ende
+  const earlyMarkDoneDelay = CONFIG.step2.duration - 300;
+  
+  setTimeout(() => {
+    stopBlinkingAndMarkDone(2);
+  }, earlyMarkDoneDelay);
+  
   animateProgress(CONFIG.step2.targetPercent, CONFIG.step2.duration, () => {
     console.log('✅ Schritt 2 fertig');
     
-    // Erst Blinken stoppen und Status setzen
-    stopBlinkingAndMarkDone(2);
-    
+    // Popup anzeigen
     setTimeout(() => {
       showPopup();
-    }, 300); 
+    }, 300);
   });
 }
+
 
   
 // Schritt 3
@@ -235,11 +247,15 @@ function startStep3() {
   console.log('🚀 Schritt 3 startet');
   startBlinking(3);
   
+  // Schritt 3 als fertig markieren BEVOR 100% erreicht ist
+  const earlyMarkDoneDelay = CONFIG.step3.duration - 400; // 400ms vor Ende
+  
+  setTimeout(() => {
+    stopBlinkingAndMarkDone(3);
+  }, earlyMarkDoneDelay);
+  
   animateProgress(CONFIG.step3.targetPercent, CONFIG.step3.duration, () => {
     console.log('✅ Schritt 3 fertig - 100% erreicht');
-    
-    // Erst Status setzen
-    stopBlinkingAndMarkDone(3);
     
     // Dann warten bevor weiter
     setTimeout(() => {
