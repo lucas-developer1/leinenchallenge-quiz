@@ -248,7 +248,7 @@ function startStep3() {
   startBlinking(3);
   
   // Schritt 3 als fertig markieren BEVOR 100% erreicht ist
-  const earlyMarkDoneDelay = CONFIG.step3.duration - 400; // 400ms vor Ende
+  const earlyMarkDoneDelay = CONFIG.step3.duration - 800; // 400ms vor Ende
   
   setTimeout(() => {
     stopBlinkingAndMarkDone(3);
