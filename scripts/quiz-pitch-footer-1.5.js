@@ -984,15 +984,26 @@ document.addEventListener("DOMContentLoaded", function() {
 }
 
   
-  function makeDataAvailable(data) {
-    window.quizData = data;
-    localStorage.setItem('quizData', JSON.stringify(data));
-    
-    const event = new CustomEvent('quizDataLoaded', { 
-      detail: data 
-    });
-    document.dispatchEvent(event);
+function makeDataAvailable(data) {
+  // In globalem Objekt speichern
+  window.quizData = data;
+  
+  // In localStorage für Persistenz
+  localStorage.setItem('quizData', JSON.stringify(data));
+  
+  // ===== NEU: Email auch einzeln speichern =====
+  if (data.email) {
+    localStorage.setItem('email', data.email);
+    console.log('✅ Email in localStorage gespeichert:', data.email);
   }
+  
+  // Custom Event für andere Scripts
+  const event = new CustomEvent('quizDataLoaded', { 
+    detail: data 
+  });
+  document.dispatchEvent(event);
+}
+
   
   window.getQuizAnswer = function(questionKey) {
     if (!window.quizData) {
