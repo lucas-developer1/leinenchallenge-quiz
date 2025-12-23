@@ -34,24 +34,29 @@
   let spinnerInitialized = false;
   let completedSteps = [];
   
- // Progress Circle aktualisieren
+// Progress Circle aktualisieren - Mobile-kompatibel
 function updateProgressCircle(percent) {
   const progressCircle = document.getElementById('progress-circle');
   const progressPercentage = document.getElementById('progress-percentage');
   
   if (!progressCircle || !progressPercentage) return;
   
-  // Radius dynamisch vom SVG-Element holen (für Mobile-Anpassung)
-  const radius = parseFloat(progressCircle.getAttribute('r')) || 65;
-  const circumference = 2 * Math.PI * radius;
+  // Radius aus dem aktuellen SVG-Element holen (berücksichtigt Mobile CSS)
+  const computedRadius = parseFloat(window.getComputedStyle(progressCircle).r) || 
+                         parseFloat(progressCircle.getAttribute('r')) || 
+                         65;
   
-  // Sicherstellen dass stroke-dasharray richtig gesetzt ist
-  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+  // Umfang berechnen
+  const circumference = 2 * Math.PI * computedRadius;
   
-  // Offset berechnen
-  const offset = circumference - (percent / 100) * circumference;
+  // Offset berechnen (0% = voller Umfang, 100% = 0)
+  const offset = circumference * (1 - percent / 100);
   
-  progressCircle.style.strokeDashoffset = offset;
+  // Styles setzen
+  progressCircle.setAttribute('stroke-dasharray', circumference);
+  progressCircle.setAttribute('stroke-dashoffset', offset);
+  
+  // Prozent-Text
   progressPercentage.textContent = Math.round(percent) + '%';
 }
 
@@ -360,18 +365,29 @@ document.querySelectorAll('[data-icon-state="gray"]').forEach(icon => {
       popup.style.opacity = '0';
     }
     
-// Progress Circle initial setzen
+// Progress Circle initial setzen - Force auf 0%
 const progressCircle = document.getElementById('progress-circle');
 if (progressCircle) {
-  // Force reset auf 0
-  const radius = parseFloat(progressCircle.getAttribute('r')) || 65;
+  const radius = parseFloat(window.getComputedStyle(progressCircle).r) || 
+                 parseFloat(progressCircle.getAttribute('r')) || 
+                 65;
   const circumference = 2 * Math.PI * radius;
   
-  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-  progressCircle.style.strokeDashoffset = circumference; // Komplett auf 0%
+  // Setze als Attribute (nicht Style) für bessere Kompatibilität
+  progressCircle.setAttribute('stroke-dasharray', circumference);
+  progressCircle.setAttribute('stroke-dashoffset', circumference);
 }
 
-updateProgressCircle(0);
+const progressPercentage = document.getElementById('progress-percentage');
+if (progressPercentage) {
+  progressPercentage.textContent = '0%';
+}
+
+// Dann normal initialisieren
+setTimeout(() => {
+  updateProgressCircle(0);
+}, 50);
+
 
     
     // Schritt 1 starten
