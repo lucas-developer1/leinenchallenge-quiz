@@ -1214,7 +1214,14 @@ setTimeout(() => {
   showConditionalContent(); // Auch Conditional Content initial prüfen
 }, 100);
 
-});
+// ===== WICHTIG: initializeQuizData AUFRUFEN =====
+setTimeout(async () => {
+  console.log('🚀 Starte initializeQuizData');
+  await initializeQuizData();
+  console.log('✅ initializeQuizData abgeschlossen');
+}, 500);
+
+});  // <- Schließt DOMContentLoaded
 
 // Hilfsfunktionen für Element-Management
 function showElements(selector) {
