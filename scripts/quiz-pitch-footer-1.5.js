@@ -34,21 +34,27 @@
   let spinnerInitialized = false;
   let completedSteps = [];
   
-  // Progress Circle aktualisieren
-  function updateProgressCircle(percent) {
-    const progressCircle = document.getElementById('progress-circle');
-    const progressPercentage = document.getElementById('progress-percentage');
-    
-    if (!progressCircle || !progressPercentage) return;
-    
-    const radius = 65;
-    const circumference = 2 * Math.PI * radius; // 408.4
-    const offset = circumference - (percent / 100) * circumference;
-    
-    progressCircle.style.strokeDashoffset = offset;
-    progressPercentage.textContent = Math.round(percent) + '%';
-  }
+ // Progress Circle aktualisieren
+function updateProgressCircle(percent) {
+  const progressCircle = document.getElementById('progress-circle');
+  const progressPercentage = document.getElementById('progress-percentage');
   
+  if (!progressCircle || !progressPercentage) return;
+  
+  // Radius dynamisch vom SVG-Element holen (für Mobile-Anpassung)
+  const radius = parseFloat(progressCircle.getAttribute('r')) || 65;
+  const circumference = 2 * Math.PI * radius;
+  
+  // Sicherstellen dass stroke-dasharray richtig gesetzt ist
+  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+  
+  // Offset berechnen
+  const offset = circumference - (percent / 100) * circumference;
+  
+  progressCircle.style.strokeDashoffset = offset;
+  progressPercentage.textContent = Math.round(percent) + '%';
+}
+
 // Schritt-Text blinken lassen
 function startBlinking(stepNumber) {
   const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
@@ -354,8 +360,19 @@ document.querySelectorAll('[data-icon-state="gray"]').forEach(icon => {
       popup.style.opacity = '0';
     }
     
-    // Progress Circle initial setzen
-    updateProgressCircle(0);
+// Progress Circle initial setzen
+const progressCircle = document.getElementById('progress-circle');
+if (progressCircle) {
+  // Force reset auf 0
+  const radius = parseFloat(progressCircle.getAttribute('r')) || 65;
+  const circumference = 2 * Math.PI * radius;
+  
+  progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+  progressCircle.style.strokeDashoffset = circumference; // Komplett auf 0%
+}
+
+updateProgressCircle(0);
+
     
     // Schritt 1 starten
     setTimeout(() => {
