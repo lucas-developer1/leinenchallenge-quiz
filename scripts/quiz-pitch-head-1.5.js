@@ -62,8 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
         
-        console.log('🚀 Optimiertes Preloading für:', redirectURL);
-        
         // 1. DNS-Prefetch (Domain-Lookup beschleunigen)
         const dnsPrefetch = document.createElement('link');
         dnsPrefetch.rel = 'dns-prefetch';
@@ -88,18 +86,12 @@ document.addEventListener('DOMContentLoaded', function() {
         prerender.rel = 'prerender';
         prerender.href = redirectURL;
         document.head.appendChild(prerender);
-        
-        console.log('✅ DNS-Prefetch, Preconnect, Prefetch und Prerender aktiv');
     }
 
     // Webhook senden (OHNE await - komplett asynchron)
     function sendWebhookAsync(email) {
-        if (!email) {
-            console.warn('Keine Email für Webhook verfügbar');
-            return;
-        }
+        if (!email) return;
 
-        // ✅ WICHTIG: keepalive = true, damit Request auch nach Navigation weiterläuft
         fetch('https://hook.eu2.make.com/bvwwlwpf8e55ta97akfieabw39309o5c', {
             method: 'POST',
             headers: {
@@ -107,15 +99,11 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 email: email,
-                action: 'quiz_step39_clicked',
+                action: 'quiz_step36_clicked',
                 timestamp: new Date().toISOString()
             }),
-            keepalive: true  // ✅ Request läuft auch nach Page-Wechsel weiter
-        }).then(response => {
-            console.log('Webhook Status:', response.status);
-        }).catch(error => {
-            console.error('Webhook-Fehler:', error);
-        });
+            keepalive: true
+        }).catch(() => {});
     }
 
     // Button-Loader-Funktion
@@ -140,50 +128,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const button33 = document.getElementById('quiz_btn_step33_b');
     if (button33) {
         button33.addEventListener('click', function(event) {
-            console.log('🎯 Button 33 geklickt - starte optimiertes Preloading');
-            
-            // Optimiertes Preloading im Hintergrund
             setTimeout(() => {
                 preloadCheckoutPageOptimized();
             }, 300);
         });
-        
-        console.log('✅ Button 33 initialisiert - Optimiertes Preloading aktiv');
-    } else {
-        console.warn('⚠️ Button 33 nicht gefunden');
     }
 
     // ✅ Button 36 Handler: SOFORTIGE Weiterleitung
     const button36 = document.getElementById('quiz_btn_step36');
-if (button36) {
-  button36.addEventListener('click', function(event) {
-    event.preventDefault();
-    
-    console.log('🎯 Button 36 geklickt - starte Weiterleitung');
-    
-    // Button-Loader anzeigen
-    showButtonLoader(button36);
-    
-    const { f_aid, f_sid } = getStorageValues();
-    const email = getEmailFromStorage();
-    const firstName = getFirstName();
-    
-    // ✅ Webhook SOFORT starten (blockiert nicht die Navigation)
-    sendWebhookAsync(email);
-    
-    // ✅ SOFORTIGE Navigation (Webhook läuft im Hintergrund weiter)
-    const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
-    console.log('➡️ Weiterleitung zu:', redirectURL);
-    
-    // Navigation ohne Delay (Webhook blockiert nicht)
-    window.location.href = redirectURL;
-  });
-  
-  console.log('✅ Button 36 initialisiert');
-} else {
-  console.warn('⚠️ Button 36 nicht gefunden');
-}
-
+    if (button36) {
+        button36.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            showButtonLoader(button36);
+            
+            const { f_aid, f_sid } = getStorageValues();
+            const email = getEmailFromStorage();
+            const firstName = getFirstName();
+            
+            sendWebhookAsync(email);
+            
+            const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
+            window.location.href = redirectURL;
+        });
+    }
+});
 
 // Spinner-Animation
 const style = document.createElement('style');
@@ -194,4 +163,5 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
 
