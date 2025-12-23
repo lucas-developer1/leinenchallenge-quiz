@@ -9,23 +9,24 @@
   'use strict';
   
   // Konfiguration
-  const CONFIG = {
-    step1: {
-      targetPercent: 24, // 15-17%
-      duration: 1800 // 1.8 Sekunden
-    },
-    step2: {
-      targetPercent: 60,
-      duration: 2500 // 2.5 Sekunden
-    },
-    step3: {
-      targetPercent: 100,
-      duration: 5000 // 5.7 Sekunden
-    },
-    blinkInterval: 500, // 0.5 Sekunden
-    grayColor: '#9ca3af',
-    darkGrayColor: '#6b7280'
-  };
+const CONFIG = {
+  step1: {
+    targetPercent: 24,
+    duration: 2500 // War 1800, jetzt 2500ms = 2.5s
+  },
+  step2: {
+    targetPercent: 60,
+    duration: 3500 // War 2500, jetzt 3500ms = 3.5s
+  },
+  step3: {
+    targetPercent: 100,
+    duration: 6500 // War 5000, jetzt 6500ms = 6.5s
+  },
+  blinkInterval: 500,
+  grayColor: '#9ca3af',
+  darkGrayColor: '#6b7280'
+};
+
   
   let currentStep = 0;
   let currentPercent = 0;
@@ -298,17 +299,14 @@ function startStep3() {
     console.warn('⚠️ Kein Next Button gefunden');
   }
   
-  // Prüfen ob Animation laufen soll (nur bei Step 1 + gültige Namen)
-  function shouldRunSpinnerAnimation() {
-    const currentInputFlowStep = getCurrentInputFlowStep();
-    const dogName = getDogName();
-    const firstName = getFirstName();
-    
-    const hasValidDogName = dogName && dogName !== 'Dein Hund' && dogName.trim() !== '';
-    const hasValidFirstName = firstName && firstName !== 'Du' && firstName.trim() !== '';
-    
-    return currentInputFlowStep === 1 && hasValidDogName && hasValidFirstName;
-  }
+ // Prüfen ob Animation laufen soll - NUR Step 1 Check (Namen optional)
+function shouldRunSpinnerAnimation() {
+  const currentInputFlowStep = getCurrentInputFlowStep();
+  
+  // Nur prüfen ob wir bei Step 1 sind - Namen werden später geladen
+  return currentInputFlowStep === 1;
+}
+
   
   // Aktuellen InputFlow Step ermitteln
   function getCurrentInputFlowStep() {
