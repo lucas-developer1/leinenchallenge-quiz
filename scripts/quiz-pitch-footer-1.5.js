@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function initializeTimer() {
-    const startButton = document.getElementById('quiz_btn_step34');
+    const startButton = document.getElementById('quiz_btn_step35');
     
     if (!startButton) return;
     
