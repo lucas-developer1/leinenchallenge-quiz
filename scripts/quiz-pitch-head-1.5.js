@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({
                 email: email,
-                action: 'quiz_step36_clicked',
+                action: 'checkout_redirect_clicked',
                 timestamp: new Date().toISOString()
             }),
             keepalive: true
@@ -124,23 +124,24 @@ document.addEventListener('DOMContentLoaded', function() {
         button.style.cursor = 'not-allowed';
     }
 
-    // ✅ Button 33 Handler: Preloading starten
-    const button33 = document.getElementById('quiz_btn_step33_b');
-    if (button33) {
-        button33.addEventListener('click', function(event) {
+    // ✅ Button mit ID: Preloading starten (bleibt so für spezifischen Button)
+    const preloadButton = document.getElementById('quiz_btn_step33_b');
+    if (preloadButton) {
+        preloadButton.addEventListener('click', function(event) {
             setTimeout(() => {
                 preloadCheckoutPageOptimized();
             }, 300);
         });
     }
 
-    // ✅ Button 36 Handler: SOFORTIGE Weiterleitung
-    const button36 = document.getElementById('quiz_btn_step36');
-    if (button36) {
-        button36.addEventListener('click', function(event) {
+    // ✅ ALLE Buttons mit data-checkout-redirect: Weiterleitung
+    const checkoutButtons = document.querySelectorAll('[data-checkout-redirect="true"]');
+    
+    checkoutButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
             event.preventDefault();
             
-            showButtonLoader(button36);
+            showButtonLoader(button);
             
             const { f_aid, f_sid } = getStorageValues();
             const email = getEmailFromStorage();
@@ -151,7 +152,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
             window.location.href = redirectURL;
         });
-    }
+    });
 });
 
 // Spinner-Animation
@@ -163,5 +164,4 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
 
