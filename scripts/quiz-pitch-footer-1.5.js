@@ -716,7 +716,7 @@ window.showConditionalContent = function() {
     }
     
     if (actualAnswer && actualAnswer.trim() === expectedAnswer.trim()) {
-      element.style.display = 'flex';
+      element.style.display = 'block';
       element.style.opacity = '0';
       setTimeout(() => {
         element.style.transition = 'opacity 0.6s ease-in';
