@@ -619,6 +619,27 @@ window.showQuizAnswersInSpans = function() {
   });
 };
 
+// Hundegewicht in Spans anzeigen
+window.showDogWeightInSpans = function() {
+  const dogWeight = getDogWeight();
+  
+  const weightSpans = document.querySelectorAll('[data-quiz-answer="dog_weight"]');
+  weightSpans.forEach(span => {
+    span.textContent = dogWeight || 'Unbekannt';
+  });
+};
+
+// Hundegewicht abrufen (mit Fallback)
+window.getDogWeight = function() {
+  // Zuerst aus Make-Daten
+  if (window.quizData && window.quizData.dog_weight) {
+    return window.quizData.dog_weight;
+  }
+  // Fallback auf localStorage
+  return localStorage.getItem('dog_weight') || null;
+};
+
+
 // Datum-Berechnungen basierend auf AKTUELLEM deutschen Datum
 window.calculateDatesFromQuiz = function() {
   const startDate = new Date();
@@ -671,7 +692,7 @@ window.calculateDatesFromQuiz = function() {
 
 // Conditional Content basierend auf Quiz-Antworten
 window.showConditionalContent = function() {
-  if (!window.quizData) {
+  if (!window.quizData && !localStorage.getItem('dog_weight')) {
     return;
   }
   
@@ -685,7 +706,14 @@ window.showConditionalContent = function() {
       return;
     }
     
-    const actualAnswer = getQuizAnswer(fieldName.trim());
+    let actualAnswer = null;
+    
+    // Spezialfall für dog_weight (kann auch ohne quizData aus localStorage kommen)
+    if (fieldName.trim() === 'dog_weight') {
+      actualAnswer = getDogWeight();
+    } else {
+      actualAnswer = getQuizAnswer(fieldName.trim());
+    }
     
     if (actualAnswer && actualAnswer.trim() === expectedAnswer.trim()) {
       element.style.display = 'flex';
@@ -699,6 +727,7 @@ window.showConditionalContent = function() {
     }
   });
 };
+
 
 // ===== TIMER SYSTEM MIT RELOAD-PERSISTENZ =====
 document.addEventListener("DOMContentLoaded", function() {
@@ -1141,6 +1170,12 @@ document.addEventListener("DOMContentLoaded", function() {
     setTimeout(() => {
       showQuizAnswersInSpans();
     }, 200);
+
+    // Hundegewicht in Spans laden
+setTimeout(() => {
+  showDogWeightInSpans();
+}, 250);
+
     
     // Datum-Berechnungen
     setTimeout(() => {
@@ -1153,8 +1188,12 @@ document.addEventListener("DOMContentLoaded", function() {
     }, 400);
   });
   
-  loadLocalDataImmediately();
-  initializeQuizData();
+// Hundegewicht auch sofort laden (falls schon im localStorage)
+setTimeout(() => {
+  showDogWeightInSpans();
+  showConditionalContent(); // Auch Conditional Content initial prüfen
+}, 100);
+
 });
 
 // Hilfsfunktionen für Element-Management
