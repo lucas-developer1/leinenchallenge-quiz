@@ -947,34 +947,42 @@ document.addEventListener("DOMContentLoaded", function() {
            'Du';
   };
   
-  async function fetchQuizData(email) {
-    if (!email) {
-      return null;
+ async function fetchQuizData(email) {
+  if (!email) {
+    console.warn('⚠️ fetchQuizData: Keine Email');
+    return null;
+  }
+  
+  console.log('🔍 fetchQuizData: Lade Daten für:', email);
+  
+  try {
+    const response = await fetch('https://hook.eu2.make.com/3m83fp9qnluup12vr8d8donscnuuo4de', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        action: 'get_quiz_data'
+      })
+    });
+    
+    console.log('📡 Response Status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     
-    try {
-      const response = await fetch('https://hook.eu2.make.com/3m83fp9qnluup12vr8d8donscnuuo4de', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email,
-          action: 'get_quiz_data'
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      return data;
-    } catch (error) {
-      return null;
-    }
+    const data = await response.json();
+    console.log('✅ Daten empfangen:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('❌ Fetch Fehler:', error);
+    return null;
   }
+}
+
   
   function makeDataAvailable(data) {
     window.quizData = data;
@@ -1133,20 +1141,32 @@ document.addEventListener("DOMContentLoaded", function() {
     }
   };
   
-  async function initializeQuizData() {
-    const email = getEmailFromStorage();
-    
-    if (getEmailFromURL()) {
-      cleanURLFromEmailParam();
-    }
-    
-    if (email) {
-      const data = await fetchQuizData(email);
-      if (data) {
-        makeDataAvailable(data);
-      }
-    }
+async function initializeQuizData() {
+  const email = getEmailFromStorage();
+  
+  console.log('🚀 initializeQuizData: Start mit Email:', email);
+  
+  if (getEmailFromURL()) {
+    console.log('🔄 Bereinige Email aus URL');
+    cleanURLFromEmailParam();
   }
+  
+  if (email) {
+    console.log('📞 Rufe fetchQuizData auf für:', email);
+    const data = await fetchQuizData(email);
+    console.log('📦 Erhaltene Daten:', data);
+    
+    if (data) {
+      console.log('✅ Mache Daten verfügbar');
+      makeDataAvailable(data);
+    } else {
+      console.warn('⚠️ Keine Daten erhalten von Make');
+    }
+  } else {
+    console.warn('⚠️ Keine Email gefunden (weder URL noch localStorage)');
+  }
+}
+
   
   document.addEventListener('quizDataLoaded', function(event) {
     const quizData = event.detail;
