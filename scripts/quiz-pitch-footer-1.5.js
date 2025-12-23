@@ -329,17 +329,17 @@ function shouldRunSpinnerAnimation() {
     return 1;
   }
   
-  // Initialisierung des Spinner-Systems
-  function initializeSpinnerSystem() {
-    if (spinnerInitialized) return;
-    
-    // Prüfen ob alle Bedingungen erfüllt sind
-    if (!shouldRunSpinnerAnimation()) {
-      console.log('⏭️ Spinner-Animation übersprungen (nicht bei Step 1 oder Namen fehlen)');
-      return;
-    }
-    
-    spinnerInitialized = true;
+// Initialisierung des Spinner-Systems
+function initializeSpinnerSystem() {
+  if (spinnerInitialized) return;
+  
+  // Prüfen ob alle Bedingungen erfüllt sind
+  if (!shouldRunSpinnerAnimation()) {
+    return;
+  }
+  
+  spinnerInitialized = true;
+
     completedSteps = [];
     
     // Initial: Alle Schritte grau
@@ -394,20 +394,18 @@ setTimeout(() => {
     }, 500);
   }
   
-  // Event Listener für Make-Daten
-  document.addEventListener('quizDataLoaded', function(event) {
-    console.log('📊 Quiz-Daten geladen, prüfe Spinner-Start');
-    setTimeout(() => {
-      initializeSpinnerSystem();
-    }, 300);
-  });
-  
-  // Initial Check beim Laden
+  // SOFORT beim Laden starten (nicht auf Make-Daten warten)
   document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
       initializeSpinnerSystem();
-    }, 800);
+    }, 300); // Reduziert von 800ms auf 300ms
   });
+  
+  // Make-Daten Event - nur noch für Logging, nicht für Spinner
+  document.addEventListener('quizDataLoaded', function(event) {
+    console.log('📊 Quiz-Daten geladen (Spinner läuft bereits)');
+  });
+
   
   // Test-Funktion für Debugging
   window.testLoadingSpinner = function() {
