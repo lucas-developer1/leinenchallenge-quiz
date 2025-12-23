@@ -1,11 +1,9 @@
 /**
- * Leinenchallenge Quiz Pitch - Head Script V1.5
+ * Leinenchallenge Quiz Pitch - Head Script
  * Checkout Preloading & Redirect Logic
  */
 
-(function() {
-    'use strict';
-
+document.addEventListener('DOMContentLoaded', function() {
     // Storage-Werte abrufen (f_aid, f_sid)
     function getStorageValues() {
         const f_aid = localStorage.getItem('f_aid') || '';
@@ -56,7 +54,7 @@
         return url;
     }
 
-    // OPTIMIERTES PRELOADING
+    // ✅ OPTIMIERTES PRELOADING: DNS + Prefetch + Prerender
     function preloadCheckoutPageOptimized() {
         const { f_aid, f_sid } = getStorageValues();
         const email = getEmailFromStorage();
@@ -64,29 +62,33 @@
         
         const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
         
+        // 1. DNS-Prefetch (Domain-Lookup beschleunigen)
         const dnsPrefetch = document.createElement('link');
         dnsPrefetch.rel = 'dns-prefetch';
         dnsPrefetch.href = 'https://start.hundetraining.de';
         document.head.appendChild(dnsPrefetch);
         
+        // 2. Preconnect (Verbindung aufbauen)
         const preconnect = document.createElement('link');
         preconnect.rel = 'preconnect';
         preconnect.href = 'https://start.hundetraining.de';
         document.head.appendChild(preconnect);
         
+        // 3. Prefetch (Ressourcen vorladen)
         const prefetch = document.createElement('link');
         prefetch.rel = 'prefetch';
         prefetch.href = redirectURL;
         prefetch.as = 'document';
         document.head.appendChild(prefetch);
         
+        // 4. Prerender (Seite komplett vorrendern - Chrome/Edge)
         const prerender = document.createElement('link');
         prerender.rel = 'prerender';
         prerender.href = redirectURL;
         document.head.appendChild(prerender);
     }
 
-    // Webhook senden
+    // Webhook senden (OHNE await - komplett asynchron)
     function sendWebhookAsync(email) {
         if (!email) return;
 
@@ -122,78 +124,43 @@
         button.style.cursor = 'not-allowed';
     }
 
-    // Checkout Redirect Buttons initialisieren
-    function initCheckoutRedirect() {
-        const checkoutButtons = document.querySelectorAll('[data-checkout-redirect="true"]');
-        
-        if (checkoutButtons.length === 0) return;
-        
-        checkoutButtons.forEach(button => {
-            // Nur einmal initialisieren
-            if (button.hasAttribute('data-redirect-init')) return;
-            button.setAttribute('data-redirect-init', 'true');
-            
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-                
-                showButtonLoader(button);
-                
-                const { f_aid, f_sid } = getStorageValues();
-                const email = getEmailFromStorage();
-                const firstName = getFirstName();
-                
-                sendWebhookAsync(email);
-                
-                const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
-                window.location.href = redirectURL;
-            });
+    // ✅ Button mit ID: Preloading starten (bleibt so für spezifischen Button)
+    const preloadButton = document.getElementById('quiz_btn_step33_b');
+    if (preloadButton) {
+        preloadButton.addEventListener('click', function(event) {
+            setTimeout(() => {
+                preloadCheckoutPageOptimized();
+            }, 300);
         });
     }
 
-    // Preload Button (ID-basiert)
-    function initPreloadButton() {
-        const preloadButton = document.getElementById('quiz_btn_step33_b');
-        if (preloadButton && !preloadButton.hasAttribute('data-preload-init')) {
-            preloadButton.setAttribute('data-preload-init', 'true');
-            preloadButton.addEventListener('click', function(event) {
-                setTimeout(() => {
-                    preloadCheckoutPageOptimized();
-                }, 300);
-            });
-        }
-    }
-
-    // Initialisierung mit mehreren Versuchen
-    function tryInitialize() {
-        initPreloadButton();
-        initCheckoutRedirect();
-    }
-
-    // Bei DOM Ready
-    document.addEventListener('DOMContentLoaded', tryInitialize);
-
-    // Nochmal nach 500ms
-    setTimeout(tryInitialize, 500);
-
-    // Nochmal nach 1500ms
-    setTimeout(tryInitialize, 1500);
-
-    // MutationObserver als Fallback
-    const observer = new MutationObserver(tryInitialize);
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
+    // ✅ ALLE Buttons mit data-checkout-redirect: Weiterleitung
+    const checkoutButtons = document.querySelectorAll('[data-checkout-redirect="true"]');
+    
+    checkoutButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            
+            showButtonLoader(button);
+            
+            const { f_aid, f_sid } = getStorageValues();
+            const email = getEmailFromStorage();
+            const firstName = getFirstName();
+            
+            sendWebhookAsync(email);
+            
+            const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
+            window.location.href = redirectURL;
+        });
     });
+});
 
-    // Spinner-Animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
-    document.head.appendChild(style);
-
-})();
+// Spinner-Animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
