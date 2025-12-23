@@ -154,36 +154,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ✅ Button 36 Handler: SOFORTIGE Weiterleitung
-    const button36 = document.getElementById('quiz_btn_step39');
-    if (button36) {
-        button36.addEventListener('click', function(event) {
-            event.preventDefault();
-            
-            console.log('🎯 Button 39 geklickt - starte Weiterleitung');
-            
-            // Button-Loader anzeigen
-            showButtonLoader(button36);
-            
-            const { f_aid, f_sid } = getStorageValues();
-            const email = getEmailFromStorage();
-            const firstName = getFirstName();
-            
-            // ✅ Webhook SOFORT starten (blockiert nicht die Navigation)
-            sendWebhookAsync(email);
-            
-            // ✅ SOFORTIGE Navigation (Webhook läuft im Hintergrund weiter)
-            const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
-            console.log('➡️ Weiterleitung zu:', redirectURL);
-            
-            // Navigation ohne Delay (Webhook blockiert nicht)
-            window.location.href = redirectURL;
-        });
-        
-        console.log('✅ Button 39 initialisiert');
-    } else {
-        console.warn('⚠️ Button 39 nicht gefunden');
-    }
-});
+    const button36 = document.getElementById('quiz_btn_step36');
+if (button36) {
+  button36.addEventListener('click', function(event) {
+    event.preventDefault();
+    
+    console.log('🎯 Button 36 geklickt - starte Weiterleitung');
+    
+    // Button-Loader anzeigen
+    showButtonLoader(button36);
+    
+    const { f_aid, f_sid } = getStorageValues();
+    const email = getEmailFromStorage();
+    const firstName = getFirstName();
+    
+    // ✅ Webhook SOFORT starten (blockiert nicht die Navigation)
+    sendWebhookAsync(email);
+    
+    // ✅ SOFORTIGE Navigation (Webhook läuft im Hintergrund weiter)
+    const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
+    console.log('➡️ Weiterleitung zu:', redirectURL);
+    
+    // Navigation ohne Delay (Webhook blockiert nicht)
+    window.location.href = redirectURL;
+  });
+  
+  console.log('✅ Button 36 initialisiert');
+} else {
+  console.warn('⚠️ Button 36 nicht gefunden');
+}
+
 
 // Spinner-Animation
 const style = document.createElement('style');
