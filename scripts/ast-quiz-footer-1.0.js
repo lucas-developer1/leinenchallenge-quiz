@@ -454,13 +454,14 @@ window.calculateStresslevel = function() {
         'bleibt gelassen': 0
       },
       
-      // q_walk_start: A=3, B=2, C=1, D=0
-      q_walk_start: {
-        'dreht durch, kaum zu bremsen': 3,
-        'sehr aufgeregt, zieht zur tür': 2,
-        'wird etwas aufgeregt': 1,
-        'wartet entspannt': 0
-      },
+  q_walk_start: {
+  'dreht durch, ist kaum zu bremsen': 3,  // ← "ist" hinzugefügt
+  'dreht durch, kaum zu bremsen': 3,      // ← Fallback (beide Varianten)
+  'sehr aufgeregt, zieht zur tür': 2,
+  'wird etwas aufgeregt': 1,
+  'wartet entspannt': 0
+},
+
       
       // q_walk_after: A=3, B=2, C=1, D=0
       q_walk_after: {
@@ -512,13 +513,14 @@ window.calculateStresslevel = function() {
         'meistens ich': 0
       },
       
-      // q_ignore (INVERTIERT): A=3, B=2, C=1, D=0
-      q_ignore: {
-        'nein, schaffe ich nicht': 3,
-        'selten': 2,
-        'manchmal, nicht konsequent': 1,
-        'ja, klappt gut': 0
-      }
+ q_ignore: {
+  'nein, das schaffe ich nicht': 3,  // ← "das" hinzugefügt
+  'nein, schaffe ich nicht': 3,      // ← Fallback (beide Varianten)
+  'selten': 2,
+  'manchmal, nicht konsequent': 1,
+  'ja, klappt gut': 0
+}
+
     };
     
     const questionMappings = mappings[qId];
