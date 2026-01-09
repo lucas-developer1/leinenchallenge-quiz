@@ -366,8 +366,7 @@
 
 
 // ============================================
-// STRESSLEVEL-ALGORITHMUS (AST) - PDF VERSION
-// Angepasst an bestehende Sheet-Spalten und Antworten
+// STRESSLEVEL-ALGORITHMUS (AST) - GOOGLE SHEET VERSION
 // ============================================
 
 const SCORING_CONFIG = {
@@ -393,109 +392,134 @@ window.calculateStresslevel = function() {
   }
   
   function getQuizAnswer(key) {
-    return window.quizData[key] || null;
+    const answer = window.quizData[key];
+    return answer ? String(answer).trim() : null;
   }
   
-  // Antworten zu Punkten (0-3) mappen - DEINE ORIGINALEN ANTWORTEN
+  function normalizeString(str) {
+    if (!str) return '';
+    return String(str).trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+  
   function mapAnswerToPoints(qId, answer) {
-    if (!answer) return 0;
+    if (!answer) {
+      console.warn(`⚠️ Keine Antwort für ${qId}`);
+      return 0;
+    }
+    
+    const normalized = normalizeString(answer);
     
     const mappings = {
       haeufigkeit_unruhe: {
-        'Täglich': 3,
-        'Mehrmals pro Woche': 2,
-        'Einmal pro Woche': 1,
-        'Selten': 0
+        'ständig': 3,
+        'häufig': 2,
+        'manchmal': 1,
+        'selten oder nie': 0
       },
       laeuft_hinterher: {
-        'Ja, ständig': 3,
-        'Ja, oft': 2,
-        'Manchmal': 1,
-        'Selten': 0
+        'ja, ständig': 3,
+        'häufig': 2,
+        'manchmal': 1,
+        'nein, fast nie': 0
       },
       fordert_aufmerksamkeit: {
-        'Ja, sehr aktiv': 3,
-        'Ja, oft': 2,
-        'Manchmal': 1,
-        'Selten': 0
+        'sehr oft': 3,
+        'häufig': 2,
+        'manchmal': 1,
+        'selten oder nie': 0
       },
       besuch_reaktion: {
-        'Bellt/Springt': 3,
-        'Ist sehr aufgeregt': 2,
-        'Ist aufmerksam': 1,
-        'Bleibt ruhig': 0
+        'dreht komplett durch': 3,
+        'ist aufgeregt, klebt am besuch': 2,
+        'geht kurz hin, beruhigt sich dann': 1,
+        'bleibt ruhig/entspannt': 0
       },
       geraeusch_reaktion: {
-        'Sehr stark': 3,
-        'Stark': 2,
-        'Mittel': 1,
-        'Kaum': 0
+        'andere hunde': 3,  // Höchster Stress
+        'wird nervös': 2,
+        'wird kurz aufmerksam': 1,
+        'bleibt meist gelassen': 0
       },
       anfang_spaziergang: {
-        'Sehr aufgeregt': 3,
-        'Aufgeregt': 2,
-        'Etwas aufgeregt': 1,
-        'Ruhig': 0
+        'dreht durch, ist kaum zu bremsen': 3,
+        'ist sehr aufgeregt, zieht zur tür': 2,
+        'wird etwas aufgeregt': 1,
+        'wartet entspannt': 0
       },
       nach_spaziergang: {
-        'Immer noch aufgedreht': 3,
-        'Braucht lange zum Runterkommen': 2,
-        'Wird schnell ruhig': 1,
-        'Sofort entspannt': 0
+        'noch nervöser als davor': 3,
+        'ist noch aufgedreht': 2,
+        'braucht etwas zeit zum abschalten': 1,
+        'müde und entspannt': 0
       },
       alleine_bleiben: {
-        'Sehr schwer': 3,
-        'Schwer': 2,
-        'Geht so': 1,
-        'Kein Problem': 0
+        'geht überhaupt nicht': 3,
+        'hat schwierigkeiten damit': 2,
+        'geht meistens gut': 1,
+        'kein problem': 0
       },
       ruhezeit_stunden: {
-        'Weniger als 12': 3,
-        '12-16': 2,
-        'Über 16': 0,
-        'Nicht sicher': 1.5
+        'unter 10 stunden': 3,
+        '10-14 stunden': 2,
+        '14-18 stunden': 1,
+        '18-20 stunden oder mehr': 0
       },
       rueckzugsort: {
-        'Nein': 3,
-        'Manchmal': 2,
-        'Ja': 0
+        'nein, kein fester platz': 3,
+        'name liegt mal hier, mal dort': 2,
+        'ja, aber mitten im wohnbereich': 1,
+        'ja, ein ruhiger platz abseits': 0
       },
       tagesablauf_struktur: {
-        'Chaotisch': 3,
-        'Wenig strukturiert': 2,
-        'Mittel': 1,
-        'Sehr strukturiert': 0
+        'gar nicht strukturiert': 3,
+        'wenig strukturiert': 2,
+        'eher strukturiert': 1,
+        'sehr strukturiert': 0
       },
       wer_bestimmt: {
-        'Meist NAME': 3,
-        'Oft NAME': 2,
-        'Ausgeglichen': 1,
-        'Meist ich': 0
+        'fast immer name': 3,
+        'meistens name': 2,
+        'ausgeglichen': 1,
+        'meistens ich': 0
       },
       ignorieren_koennen: {
-        'Sehr schwer': 3,
-        'Schwer': 2,
-        'Manchmal': 1,
-        'Gut': 0
+        'nein, das schaffe ich nicht': 3,
+        'selten – name gibt nicht auf': 2,
+        'manchmal, aber nicht konsequent': 1,
+        'ja, das klappt gut': 0
       }
     };
     
-    return mappings[qId] && mappings[qId][answer] !== undefined 
-      ? mappings[qId][answer] 
-      : 0;
+    const questionMappings = mappings[qId];
+    if (!questionMappings) {
+      console.warn(`⚠️ Keine Mappings für Frage: ${qId}`);
+      return 0;
+    }
+    
+    const points = questionMappings[normalized];
+    
+    if (points === undefined) {
+      console.warn(`⚠️ Unbekannte Antwort für ${qId}: "${answer}" (normalized: "${normalized}")`);
+      console.log('Verfügbare Optionen:', Object.keys(questionMappings));
+      return 0;
+    }
+    
+    console.log(`✅ ${qId}: "${answer}" → ${points} Punkte`);
+    return points;
   }
   
-  // Schritt 1: Gewichtete Summe berechnen
   let weightedSum = 0;
   let maxPossible = 0;
   const details = {};
+  
+  console.log('=== STRESSLEVEL BERECHNUNG START ===');
   
   for (const [qId, config] of Object.entries(SCORING_CONFIG)) {
     const answer = getQuizAnswer(qId);
     let points = mapAnswerToPoints(qId, answer);
     
     weightedSum += points * config.weight;
-    maxPossible += 3 * config.weight; // Max 3 Punkte pro Frage
+    maxPossible += 3 * config.weight;
     
     details[qId] = {
       answer: answer || 'Keine Antwort',
@@ -505,37 +529,34 @@ window.calculateStresslevel = function() {
     };
   }
   
-  // Schritt 2: Basis-Score (0-100)
+  console.log('📊 Gewichtete Summe:', weightedSum.toFixed(2));
+  console.log('📊 Max möglich:', maxPossible.toFixed(2));
+  
   let baseScore = (weightedSum / maxPossible) * 100;
+  console.log('📊 Basis-Score:', baseScore.toFixed(2) + '%');
   
-  console.log('📊 Basis-Score:', {
-    weightedSum: weightedSum.toFixed(2),
-    maxPossible: maxPossible.toFixed(2),
-    baseScore: baseScore.toFixed(2)
-  });
-  
-  // Schritt 3: Trigger-Bonus (+5 bei "Eigentlich fast immer")
   const triggerAnswer = getQuizAnswer('groesster_stressor');
   let triggerBonus = 0;
-  if (triggerAnswer === 'Eigentlich fast immer') {
+  if (triggerAnswer && normalizeString(triggerAnswer).includes('fast immer')) {
     triggerBonus = 5;
     baseScore += triggerBonus;
     console.log('✅ Trigger-Bonus: +5 Punkte');
   }
   
-  // Schritt 4: Alters-Modifikator (+10% für Welpen/Senioren)
   const age = getQuizAnswer('alter');
   let ageModifier = 1.0;
-  if (age === 'Welpe (unter 12 Monate)' || age === 'Senior (ab 8 Jahre)') {
-    ageModifier = 1.1;
-    baseScore *= ageModifier;
-    console.log('✅ Alters-Modifikator: +10%');
+  if (age) {
+    const normalizedAge = normalizeString(age);
+    if (normalizedAge.includes('welpe') || normalizedAge.includes('senior')) {
+      ageModifier = 1.1;
+      baseScore *= ageModifier;
+      console.log('✅ Alters-Modifikator: +10%');
+    }
   }
   
-  // Schritt 5: Grenzen setzen (Min 15, Max 100)
   const finalScore = Math.min(100, Math.max(15, Math.round(baseScore)));
+  console.log('📊 Final Score:', finalScore);
   
-  // Stresslevel bestimmen (PDF Seite 1) - DEINE ORIGINALEN LEVEL-NAMEN
   let stresslevel = 'niedrig';
   let stresslevelText = 'Niedrig';
   let color = '#4CAF50';
@@ -565,7 +586,11 @@ window.calculateStresslevel = function() {
     details: details
   };
   
-  console.log('📊 Stresslevel berechnet (PDF-Algo):', result);
+  console.log('=== ERGEBNIS ===');
+  console.log('Score:', finalScore);
+  console.log('Level:', stresslevel);
+  console.log('Text:', stresslevelText);
+  console.log('=== ENDE ===');
   
   return result;
 };
