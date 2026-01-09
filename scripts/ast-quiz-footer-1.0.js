@@ -366,8 +366,25 @@
 
 
 // ============================================
-// STRESSLEVEL-ALGORITHMUS (AST)
+// STRESSLEVEL-ALGORITHMUS (AST) - PDF VERSION
+// Angepasst an bestehende Sheet-Spalten und Antworten
 // ============================================
+
+const SCORING_CONFIG = {
+  haeufigkeit_unruhe: { weight: 1.5, invert: false },
+  laeuft_hinterher: { weight: 1.0, invert: false },
+  fordert_aufmerksamkeit: { weight: 1.5, invert: false },
+  besuch_reaktion: { weight: 1.0, invert: false },
+  geraeusch_reaktion: { weight: 1.0, invert: false },
+  anfang_spaziergang: { weight: 1.0, invert: false },
+  nach_spaziergang: { weight: 1.5, invert: false },
+  alleine_bleiben: { weight: 1.0, invert: false },
+  ruhezeit_stunden: { weight: 1.5, invert: true },
+  rueckzugsort: { weight: 1.0, invert: true },
+  tagesablauf_struktur: { weight: 1.0, invert: true },
+  wer_bestimmt: { weight: 1.5, invert: false },
+  ignorieren_koennen: { weight: 1.0, invert: true }
+};
 
 window.calculateStresslevel = function() {
   if (!window.quizData) {
@@ -375,176 +392,180 @@ window.calculateStresslevel = function() {
     return null;
   }
   
-  let totalScore = 0;
-  let multiplier = 1.0;
-  
-  // Hilfsfunktion für Quiz-Antworten
   function getQuizAnswer(key) {
     return window.quizData[key] || null;
   }
   
-  // Frage 1: Wie oft ist dein Hund zu Hause unruhig?
-  const haeufigkeitUnruhe = getQuizAnswer('haeufigkeit_unruhe');
-  let score1 = 0;
-  switch(haeufigkeitUnruhe) {
-    case 'Täglich': score1 = 15; break;
-    case 'Mehrmals pro Woche': score1 = 11; break;
-    case 'Einmal pro Woche': score1 = 7; break;
-    case 'Selten': score1 = 3; break;
-    default: score1 = 0;
+  // Antworten zu Punkten (0-3) mappen - DEINE ORIGINALEN ANTWORTEN
+  function mapAnswerToPoints(qId, answer) {
+    if (!answer) return 0;
+    
+    const mappings = {
+      haeufigkeit_unruhe: {
+        'Täglich': 3,
+        'Mehrmals pro Woche': 2,
+        'Einmal pro Woche': 1,
+        'Selten': 0
+      },
+      laeuft_hinterher: {
+        'Ja, ständig': 3,
+        'Ja, oft': 2,
+        'Manchmal': 1,
+        'Selten': 0
+      },
+      fordert_aufmerksamkeit: {
+        'Ja, sehr aktiv': 3,
+        'Ja, oft': 2,
+        'Manchmal': 1,
+        'Selten': 0
+      },
+      besuch_reaktion: {
+        'Bellt/Springt': 3,
+        'Ist sehr aufgeregt': 2,
+        'Ist aufmerksam': 1,
+        'Bleibt ruhig': 0
+      },
+      geraeusch_reaktion: {
+        'Sehr stark': 3,
+        'Stark': 2,
+        'Mittel': 1,
+        'Kaum': 0
+      },
+      anfang_spaziergang: {
+        'Sehr aufgeregt': 3,
+        'Aufgeregt': 2,
+        'Etwas aufgeregt': 1,
+        'Ruhig': 0
+      },
+      nach_spaziergang: {
+        'Immer noch aufgedreht': 3,
+        'Braucht lange zum Runterkommen': 2,
+        'Wird schnell ruhig': 1,
+        'Sofort entspannt': 0
+      },
+      alleine_bleiben: {
+        'Sehr schwer': 3,
+        'Schwer': 2,
+        'Geht so': 1,
+        'Kein Problem': 0
+      },
+      ruhezeit_stunden: {
+        'Weniger als 12': 3,
+        '12-16': 2,
+        'Über 16': 0,
+        'Nicht sicher': 1.5
+      },
+      rueckzugsort: {
+        'Nein': 3,
+        'Manchmal': 2,
+        'Ja': 0
+      },
+      tagesablauf_struktur: {
+        'Chaotisch': 3,
+        'Wenig strukturiert': 2,
+        'Mittel': 1,
+        'Sehr strukturiert': 0
+      },
+      wer_bestimmt: {
+        'Meist NAME': 3,
+        'Oft NAME': 2,
+        'Ausgeglichen': 1,
+        'Meist ich': 0
+      },
+      ignorieren_koennen: {
+        'Sehr schwer': 3,
+        'Schwer': 2,
+        'Manchmal': 1,
+        'Gut': 0
+      }
+    };
+    
+    return mappings[qId] && mappings[qId][answer] !== undefined 
+      ? mappings[qId][answer] 
+      : 0;
   }
   
-  // Frage 2: Was stresst deinen Hund am MEISTEN?
-  const groessterStressor = getQuizAnswer('groesster_stressor');
-  let score2 = 0;
-  switch(groessterStressor) {
-    case 'Geräusche': score2 = 12; break;
-    case 'Andere Hunde': score2 = 10; break;
-    case 'Menschen/Besuch': score2 = 10; break;
-    case 'Alleine sein': score2 = 12; break;
-    case 'Veränderungen': score2 = 8; break;
-    default: score2 = 0;
+  // Schritt 1: Gewichtete Summe berechnen
+  let weightedSum = 0;
+  let maxPossible = 0;
+  const details = {};
+  
+  for (const [qId, config] of Object.entries(SCORING_CONFIG)) {
+    const answer = getQuizAnswer(qId);
+    let points = mapAnswerToPoints(qId, answer);
+    
+    weightedSum += points * config.weight;
+    maxPossible += 3 * config.weight; // Max 3 Punkte pro Frage
+    
+    details[qId] = {
+      answer: answer || 'Keine Antwort',
+      points: points,
+      weight: config.weight,
+      weighted: points * config.weight
+    };
   }
   
-  // Frage 3: Läuft NAME dir zu Hause häufig hinterher?
-  const laueftHinterher = getQuizAnswer('laeuft_hinterher');
-  let score3 = 0;
-  switch(laueftHinterher) {
-    case 'Ja, ständig': score3 = 10; break;
-    case 'Ja, oft': score3 = 7; break;
-    case 'Manchmal': score3 = 4; break;
-    case 'Selten': score3 = 2; break;
-    default: score3 = 0;
+  // Schritt 2: Basis-Score (0-100)
+  let baseScore = (weightedSum / maxPossible) * 100;
+  
+  console.log('📊 Basis-Score:', {
+    weightedSum: weightedSum.toFixed(2),
+    maxPossible: maxPossible.toFixed(2),
+    baseScore: baseScore.toFixed(2)
+  });
+  
+  // Schritt 3: Trigger-Bonus (+5 bei "Eigentlich fast immer")
+  const triggerAnswer = getQuizAnswer('groesster_stressor');
+  let triggerBonus = 0;
+  if (triggerAnswer === 'Eigentlich fast immer') {
+    triggerBonus = 5;
+    baseScore += triggerBonus;
+    console.log('✅ Trigger-Bonus: +5 Punkte');
   }
   
-  // Frage 4: Fordert NAME aktiv Aufmerksamkeit ein?
-  const fordertAufmerksamkeit = getQuizAnswer('fordert_aufmerksamkeit');
-  let score4 = 0;
-  switch(fordertAufmerksamkeit) {
-    case 'Ja, sehr aktiv': score4 = 10; break;
-    case 'Ja, oft': score4 = 7; break;
-    case 'Manchmal': score4 = 4; break;
-    case 'Selten': score4 = 2; break;
-    default: score4 = 0;
+  // Schritt 4: Alters-Modifikator (+10% für Welpen/Senioren)
+  const age = getQuizAnswer('alter');
+  let ageModifier = 1.0;
+  if (age === 'Welpe (unter 12 Monate)' || age === 'Senior (ab 8 Jahre)') {
+    ageModifier = 1.1;
+    baseScore *= ageModifier;
+    console.log('✅ Alters-Modifikator: +10%');
   }
   
-  // Frage 5: Was macht NAME, wenn Besuch kommt?
-  const besuchReaktion = getQuizAnswer('besuch_reaktion');
-  let score5 = 0;
-  switch(besuchReaktion) {
-    case 'Bellt/Springt': score5 = 10; break;
-    case 'Ist sehr aufgeregt': score5 = 8; break;
-    case 'Ist aufmerksam': score5 = 4; break;
-    case 'Bleibt ruhig': score5 = 0; break;
-    default: score5 = 0;
-  }
+  // Schritt 5: Grenzen setzen (Min 15, Max 100)
+  const finalScore = Math.min(100, Math.max(15, Math.round(baseScore)));
   
-  // Frage 6: Wie reagiert NAME auf Geräusche?
-  const geraeuschReaktion = getQuizAnswer('geraeusch_reaktion');
-  let score6 = 0;
-  switch(geraeuschReaktion) {
-    case 'Sehr stark': score6 = 10; break;
-    case 'Stark': score6 = 7; break;
-    case 'Mittel': score6 = 4; break;
-    case 'Kaum': score6 = 1; break;
-    default: score6 = 0;
-  }
-  
-  // Frage 7: Wie gut kann NAME alleine bleiben?
-  const alleinebleiben = getQuizAnswer('alleine_bleiben');
-  let score7 = 0;
-  switch(alleinebleiben) {
-    case 'Sehr schwer': score7 = 10; break;
-    case 'Schwer': score7 = 7; break;
-    case 'Geht so': score7 = 4; break;
-    case 'Kein Problem': score7 = 0; break;
-    default: score7 = 0;
-  }
-  
-  // Frage 8: Wie viele Stunden Ruhezeit hat NAME am Tag?
-  const ruhezeitStunden = getQuizAnswer('ruhezeit_stunden');
-  let score8 = 0;
-  switch(ruhezeitStunden) {
-    case 'Weniger als 12': score8 = 10; break;
-    case '12-16': score8 = 5; break;
-    case 'Über 16': score8 = 0; break;
-    default: score8 = 0;
-  }
-  
-  // Frage 9: Hat NAME einen festen Rückzugsort?
-  const rueckzugsort = getQuizAnswer('rueckzugsort');
-  let score9 = 0;
-  switch(rueckzugsort) {
-    case 'Nein': score9 = 8; break;
-    case 'Manchmal': score9 = 4; break;
-    case 'Ja': score9 = 0; break;
-    default: score9 = 0;
-  }
-  
-  // Frage 10: Wie strukturiert ist euer Tagesablauf?
-  const tagesablaufStruktur = getQuizAnswer('tagesablauf_struktur');
-  let score10 = 0;
-  switch(tagesablaufStruktur) {
-    case 'Chaotisch': score10 = 8; break;
-    case 'Wenig strukturiert': score10 = 5; break;
-    case 'Mittel': score10 = 3; break;
-    case 'Sehr strukturiert': score10 = 0; break;
-    default: score10 = 0;
-  }
-  
-  totalScore = score1 + score2 + score3 + score4 + score5 + score6 + score7 + score8 + score9 + score10;
-  
-  // Multiplikatoren
-  const wieLangeProblem = getQuizAnswer('wie_lange_problem');
-  const bedingung1 = (haeufigkeitUnruhe === 'Täglich') && 
-                     (wieLangeProblem === 'Schon immer' || wieLangeProblem === 'Über ein Jahr');
-  
-  const bedingung2 = (geraeuschReaktion === 'Sehr stark' || geraeuschReaktion === 'Stark') &&
-                     (rueckzugsort === 'Nein');
-  
-  const bedingung3 = (alleinebleiben === 'Sehr schwer') &&
-                     (ruhezeitStunden === 'Weniger als 12');
-  
-  if (bedingung1) multiplier *= 1.08;
-  if (bedingung2) multiplier *= 1.08;
-  if (bedingung3) multiplier *= 1.08;
-  
-  const finalScore = Math.min(Math.round(totalScore * multiplier), 100);
-  
+  // Stresslevel bestimmen (PDF Seite 1) - DEINE ORIGINALEN LEVEL-NAMEN
   let stresslevel = 'niedrig';
   let stresslevelText = 'Niedrig';
+  let color = '#4CAF50';
   
-  if (finalScore >= 75) {
+  if (finalScore >= 76) {
     stresslevel = 'sehr_hoch';
     stresslevelText = 'Sehr hoch';
-  } else if (finalScore >= 55) {
+    color = '#F44336';
+  } else if (finalScore >= 51) {
     stresslevel = 'hoch';
     stresslevelText = 'Hoch';
-  } else if (finalScore >= 35) {
+    color = '#FF9800';
+  } else if (finalScore >= 26) {
     stresslevel = 'mittel';
     stresslevelText = 'Mittel';
+    color = '#FFC107';
   }
   
   const result = {
     score: finalScore,
     stresslevel: stresslevel,
     stresslevelText: stresslevelText,
-    multiplier: multiplier,
-    details: {
-      haeufigkeit_unruhe: { answer: haeufigkeitUnruhe, points: score1 },
-      groesster_stressor: { answer: groessterStressor, points: score2 },
-      laeuft_hinterher: { answer: laueftHinterher, points: score3 },
-      fordert_aufmerksamkeit: { answer: fordertAufmerksamkeit, points: score4 },
-      besuch_reaktion: { answer: besuchReaktion, points: score5 },
-      geraeusch_reaktion: { answer: geraeuschReaktion, points: score6 },
-      alleine_bleiben: { answer: alleinebleiben, points: score7 },
-      ruhezeit_stunden: { answer: ruhezeitStunden, points: score8 },
-      rueckzugsort: { answer: rueckzugsort, points: score9 },
-      tagesablauf_struktur: { answer: tagesablaufStruktur, points: score10 }
-    }
+    color: color,
+    baseScore: Math.round(baseScore),
+    triggerBonus: triggerBonus,
+    ageModifier: ageModifier,
+    details: details
   };
   
-  console.log('📊 Stresslevel berechnet:', result);
+  console.log('📊 Stresslevel berechnet (PDF-Algo):', result);
   
   return result;
 };
@@ -566,6 +587,10 @@ window.getStresslevelText = function() {
   return window.stresslevelResult ? window.stresslevelResult.stresslevelText : 'Unbekannt';
 };
 
+window.getStresslevelColor = function() {
+  return window.stresslevelResult ? window.stresslevelResult.color : '#999';
+};
+
 
 // ============================================
 // STRESSLEVEL CONTENT ANZEIGEN
@@ -581,7 +606,6 @@ window.showStresslevelContent = function() {
   
   console.log('📊 Zeige Content für Stresslevel:', stresslevel);
   
-  // Hilfsfunktionen
   function hideElements(selector) {
     document.querySelectorAll(selector).forEach(el => {
       el.style.display = 'none';
@@ -594,30 +618,44 @@ window.showStresslevelContent = function() {
     });
   }
   
+  // Alle Stresslevel-Inhalte verstecken
   hideElements('[data-stresslevel-content]');
+  
+  // Spezifischen Stresslevel-Inhalt anzeigen
   showElements(`[data-stresslevel-content="${stresslevel}"]`);
   
+  // Score in Spans einsetzen
   const scoreSpans = document.querySelectorAll('[data-stresslevel-score="true"]');
   scoreSpans.forEach(span => {
     span.textContent = window.getStresslevelScore();
   });
   
+  // Stresslevel-Text in Spans einsetzen
   const textSpans = document.querySelectorAll('[data-stresslevel-text="true"]');
   textSpans.forEach(span => {
     span.textContent = window.getStresslevelText();
   });
   
+  // Stresslevel-Kategorie in Spans einsetzen
   const categorySpans = document.querySelectorAll('[data-stresslevel-category="true"]');
   categorySpans.forEach(span => {
     span.textContent = stresslevel;
   });
   
+  // Farbe in Spans einsetzen
+  const colorSpans = document.querySelectorAll('[data-stresslevel-color="true"]');
+  colorSpans.forEach(span => {
+    span.style.color = window.getStresslevelColor();
+  });
+  
   console.log('✅ Stresslevel-Content angezeigt:', {
     level: stresslevel,
     score: window.getStresslevelScore(),
-    text: window.getStresslevelText()
+    text: window.getStresslevelText(),
+    color: window.getStresslevelColor()
   });
 };
+
 
 
 // ============================================
