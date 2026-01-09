@@ -366,23 +366,24 @@
 
 
 // ============================================
-// STRESSLEVEL-ALGORITHMUS (AST) - GOOGLE SHEET VERSION
+// STRESSLEVEL-ALGORITHMUS (AST) - PDF VERSION
+// EXAKT nach Stress-Score-Algorithmus.pdf
 // ============================================
 
 const SCORING_CONFIG = {
-  haeufigkeit_unruhe: { weight: 1.5, invert: false },
-  laeuft_hinterher: { weight: 1.0, invert: false },
-  fordert_aufmerksamkeit: { weight: 1.5, invert: false },
-  besuch_reaktion: { weight: 1.0, invert: false },
-  geraeusch_reaktion: { weight: 1.0, invert: false },
-  anfang_spaziergang: { weight: 1.0, invert: false },
-  nach_spaziergang: { weight: 1.5, invert: false },
-  alleine_bleiben: { weight: 1.0, invert: false },
-  ruhezeit_stunden: { weight: 1.5, invert: true },
-  rueckzugsort: { weight: 1.0, invert: true },
-  tagesablauf_struktur: { weight: 1.0, invert: true },
-  wer_bestimmt: { weight: 1.5, invert: false },
-  ignorieren_koennen: { weight: 1.0, invert: true }
+  q_restless: { weight: 1.5, invert: false },
+  q_follow: { weight: 1.0, invert: false },
+  q_attention: { weight: 1.5, invert: false },
+  q_visitors: { weight: 1.0, invert: false },
+  q_sounds: { weight: 1.0, invert: false },
+  q_walk_start: { weight: 1.0, invert: false },
+  q_walk_after: { weight: 1.5, invert: false },
+  q_alone: { weight: 1.0, invert: false },
+  q_rest_hours: { weight: 1.5, invert: true },
+  q_retreat: { weight: 1.0, invert: true },
+  q_structure: { weight: 1.0, invert: true },
+  q_control: { weight: 1.5, invert: false },
+  q_ignore: { weight: 1.0, invert: true }
 };
 
 window.calculateStresslevel = function() {
@@ -396,11 +397,13 @@ window.calculateStresslevel = function() {
     return answer ? String(answer).trim() : null;
   }
   
+  // Normalisierung für robustes Matching
   function normalizeString(str) {
     if (!str) return '';
     return String(str).trim().toLowerCase().replace(/\s+/g, ' ');
   }
   
+  // Antworten zu Punkten mappen (EXAKT nach PDF Seite 3-4)
   function mapAnswerToPoints(qId, answer) {
     if (!answer) {
       console.warn(`⚠️ Keine Antwort für ${qId}`);
@@ -409,84 +412,112 @@ window.calculateStresslevel = function() {
     
     const normalized = normalizeString(answer);
     
+    // EXAKT nach PDF - Seite 3-4
     const mappings = {
-      haeufigkeit_unruhe: {
+      // q_restless: A=3, B=2, C=1, D=0
+      q_restless: {
         'ständig': 3,
         'häufig': 2,
         'manchmal': 1,
         'selten oder nie': 0
       },
-      laeuft_hinterher: {
+      
+      // q_follow: A=3, B=2, C=1, D=0
+      q_follow: {
         'ja, ständig': 3,
         'häufig': 2,
         'manchmal': 1,
         'nein, fast nie': 0
       },
-      fordert_aufmerksamkeit: {
+      
+      // q_attention: A=3, B=2, C=1, D=0
+      q_attention: {
         'sehr oft': 3,
         'häufig': 2,
         'manchmal': 1,
         'selten oder nie': 0
       },
-      besuch_reaktion: {
+      
+      // q_visitors: A=3, B=2, C=1, D=0
+      q_visitors: {
         'dreht komplett durch': 3,
         'ist aufgeregt, klebt am besuch': 2,
-        'geht kurz hin, beruhigt sich dann': 1,
-        'bleibt ruhig/entspannt': 0
+        'geht kurz hin, beruhigt sich': 1,
+        'bleibt entspannt': 0
       },
-      geraeusch_reaktion: {
-        'andere hunde': 3,  // Höchster Stress
+      
+      // q_sounds: A=3, B=2, C=1, D=0
+      q_sounds: {
+        'reagiert stark': 3,
         'wird nervös': 2,
         'wird kurz aufmerksam': 1,
-        'bleibt meist gelassen': 0
+        'bleibt gelassen': 0
       },
-      anfang_spaziergang: {
-        'dreht durch, ist kaum zu bremsen': 3,
-        'ist sehr aufgeregt, zieht zur tür': 2,
+      
+      // q_walk_start: A=3, B=2, C=1, D=0
+      q_walk_start: {
+        'dreht durch, kaum zu bremsen': 3,
+        'sehr aufgeregt, zieht zur tür': 2,
         'wird etwas aufgeregt': 1,
         'wartet entspannt': 0
       },
-      nach_spaziergang: {
+      
+      // q_walk_after: A=3, B=2, C=1, D=0
+      q_walk_after: {
         'noch nervöser als davor': 3,
         'ist noch aufgedreht': 2,
-        'braucht etwas zeit zum abschalten': 1,
+        'braucht zeit zum abschalten': 1,
         'müde und entspannt': 0
       },
-      alleine_bleiben: {
+      
+      // q_alone: A=3, B=2, C=1, D=0
+      q_alone: {
         'geht überhaupt nicht': 3,
-        'hat schwierigkeiten damit': 2,
+        'hat schwierigkeiten': 2,
         'geht meistens gut': 1,
         'kein problem': 0
       },
-      ruhezeit_stunden: {
+      
+      // q_rest_hours (INVERTIERT): A=3, B=2, C=1, D=0, E=1.5
+      q_rest_hours: {
         'unter 10 stunden': 3,
         '10-14 stunden': 2,
         '14-18 stunden': 1,
-        '18-20 stunden oder mehr': 0
+        '18-20+ stunden': 0,
+        '18-20 stunden oder mehr': 0,
+        'nicht sicher': 1.5
       },
-      rueckzugsort: {
+      
+      // q_retreat (INVERTIERT): A=3, B=2, C=1, D=0
+      q_retreat: {
         'nein, kein fester platz': 3,
-        'name liegt mal hier, mal dort': 2,
+        'liegt mal hier, mal dort': 2,
         'ja, aber mitten im wohnbereich': 1,
-        'ja, ein ruhiger platz abseits': 0
+        'ja, ruhiger platz abseits': 0
       },
-      tagesablauf_struktur: {
+      
+      // q_structure (INVERTIERT): A=3, B=2, C=1, D=0
+      q_structure: {
         'gar nicht strukturiert': 3,
         'wenig strukturiert': 2,
         'eher strukturiert': 1,
         'sehr strukturiert': 0
       },
-      wer_bestimmt: {
+      
+      // q_control: A=3, B=2, C=1, D=0
+      q_control: {
         'fast immer name': 3,
         'meistens name': 2,
         'ausgeglichen': 1,
         'meistens ich': 0
       },
-      ignorieren_koennen: {
-        'nein, das schaffe ich nicht': 3,
-        'selten – name gibt nicht auf': 2,
-        'manchmal, aber nicht konsequent': 1,
-        'ja, das klappt gut': 0
+      
+      // q_ignore (INVERTIERT): A=3, B=2, C=1, D=0
+      q_ignore: {
+        'nein, schaffe ich nicht': 3,
+        'selten': 2,
+        'manchmal, nicht konsequent': 1,
+        'ja, klappt gut': 0
       }
     };
     
@@ -499,20 +530,22 @@ window.calculateStresslevel = function() {
     const points = questionMappings[normalized];
     
     if (points === undefined) {
-      console.warn(`⚠️ Unbekannte Antwort für ${qId}: "${answer}" (normalized: "${normalized}")`);
-      console.log('Verfügbare Optionen:', Object.keys(questionMappings));
+      console.warn(`⚠️ Unbekannte Antwort für ${qId}: "${answer}"`);
+      console.log(`   Normalized: "${normalized}"`);
+      console.log('   Verfügbare Optionen:', Object.keys(questionMappings));
       return 0;
     }
     
-    console.log(`✅ ${qId}: "${answer}" → ${points} Punkte`);
+    console.log(`✅ ${qId}: "${answer}" → ${points} Punkte (weight: ${SCORING_CONFIG[qId].weight}x)`);
     return points;
   }
   
+  // Schritt 1: Gewichtete Summe berechnen (PDF Seite 5)
   let weightedSum = 0;
   let maxPossible = 0;
   const details = {};
   
-  console.log('=== STRESSLEVEL BERECHNUNG START ===');
+  console.log('=== STRESSLEVEL BERECHNUNG (PDF-Algorithmus) ===');
   
   for (const [qId, config] of Object.entries(SCORING_CONFIG)) {
     const answer = getQuizAnswer(qId);
@@ -530,48 +563,53 @@ window.calculateStresslevel = function() {
   }
   
   console.log('📊 Gewichtete Summe:', weightedSum.toFixed(2));
-  console.log('📊 Max möglich:', maxPossible.toFixed(2));
+  console.log('📊 Max möglich:', maxPossible.toFixed(2), '(13 Fragen × 3 × Gewicht)');
   
+  // Schritt 2: Basis-Score (0-100) - PDF Seite 5
   let baseScore = (weightedSum / maxPossible) * 100;
   console.log('📊 Basis-Score:', baseScore.toFixed(2) + '%');
   
-  const triggerAnswer = getQuizAnswer('groesster_stressor');
+  // Schritt 3: Trigger-Bonus (+5 Punkte) - PDF Seite 5
+  const triggerAnswer = getQuizAnswer('q_trigger');
   let triggerBonus = 0;
-  if (triggerAnswer && normalizeString(triggerAnswer).includes('fast immer')) {
+  if (triggerAnswer && normalizeString(triggerAnswer) === 'eigentlich fast immer') {
     triggerBonus = 5;
     baseScore += triggerBonus;
-    console.log('✅ Trigger-Bonus: +5 Punkte');
+    console.log('✅ Trigger-Bonus: +5 Punkte (q_trigger = "Eigentlich fast immer")');
   }
   
-  const age = getQuizAnswer('alter');
+  // Schritt 4: Alters-Modifikator (+10%) - PDF Seite 5
+  const age = getQuizAnswer('q_age');
   let ageModifier = 1.0;
   if (age) {
     const normalizedAge = normalizeString(age);
     if (normalizedAge.includes('welpe') || normalizedAge.includes('senior')) {
       ageModifier = 1.1;
       baseScore *= ageModifier;
-      console.log('✅ Alters-Modifikator: +10%');
+      console.log('✅ Alters-Modifikator: ×1.1 (+10% für Welpe/Senior)');
     }
   }
   
+  // Schritt 5: Grenzen setzen (Min 15, Max 100) - PDF Seite 5
   const finalScore = Math.min(100, Math.max(15, Math.round(baseScore)));
-  console.log('📊 Final Score:', finalScore);
+  console.log('📊 Final Score:', finalScore, '(min: 15, max: 100)');
   
-  let stresslevel = 'niedrig';
+  // Stresslevel bestimmen (PDF Seite 1)
+  let stresslevel = 'low';
   let stresslevelText = 'Niedrig';
   let color = '#4CAF50';
   
   if (finalScore >= 76) {
-    stresslevel = 'sehr_hoch';
-    stresslevelText = 'Sehr hoch';
+    stresslevel = 'high';
+    stresslevelText = 'Hoch';
     color = '#F44336';
   } else if (finalScore >= 51) {
-    stresslevel = 'hoch';
-    stresslevelText = 'Hoch';
+    stresslevel = 'elevated';
+    stresslevelText = 'Erhöht';
     color = '#FF9800';
   } else if (finalScore >= 26) {
-    stresslevel = 'mittel';
-    stresslevelText = 'Mittel';
+    stresslevel = 'medium';
+    stresslevelText = 'Moderat';
     color = '#FFC107';
   }
   
@@ -589,15 +627,16 @@ window.calculateStresslevel = function() {
   console.log('=== ERGEBNIS ===');
   console.log('Score:', finalScore);
   console.log('Level:', stresslevel);
-  console.log('Text:', stresslevelText);
-  console.log('=== ENDE ===');
+  console.log('Label:', stresslevelText);
+  console.log('Farbe:', color);
+  console.log('================');
   
   return result;
 };
 
 
 // ============================================
-// STRESSLEVEL HELPER FUNCTIONS
+// HELPER FUNCTIONS
 // ============================================
 
 window.getStresslevel = function() {
@@ -618,7 +657,7 @@ window.getStresslevelColor = function() {
 
 
 // ============================================
-// STRESSLEVEL CONTENT ANZEIGEN
+// CONTENT ANZEIGEN
 // ============================================
 
 window.showStresslevelContent = function() {
@@ -643,44 +682,38 @@ window.showStresslevelContent = function() {
     });
   }
   
-  // Alle Stresslevel-Inhalte verstecken
+  // Alle verstecken
   hideElements('[data-stresslevel-content]');
   
-  // Spezifischen Stresslevel-Inhalt anzeigen
+  // Spezifischen anzeigen (WICHTIG: PDF verwendet "low", "medium", "elevated", "high")
   showElements(`[data-stresslevel-content="${stresslevel}"]`);
   
-  // Score in Spans einsetzen
+  // Score einsetzen
   const scoreSpans = document.querySelectorAll('[data-stresslevel-score="true"]');
   scoreSpans.forEach(span => {
     span.textContent = window.getStresslevelScore();
   });
   
-  // Stresslevel-Text in Spans einsetzen
+  // Text einsetzen
   const textSpans = document.querySelectorAll('[data-stresslevel-text="true"]');
   textSpans.forEach(span => {
     span.textContent = window.getStresslevelText();
   });
   
-  // Stresslevel-Kategorie in Spans einsetzen
+  // Kategorie einsetzen
   const categorySpans = document.querySelectorAll('[data-stresslevel-category="true"]');
   categorySpans.forEach(span => {
     span.textContent = stresslevel;
   });
   
-  // Farbe in Spans einsetzen
+  // Farbe einsetzen
   const colorSpans = document.querySelectorAll('[data-stresslevel-color="true"]');
   colorSpans.forEach(span => {
     span.style.color = window.getStresslevelColor();
   });
   
-  console.log('✅ Stresslevel-Content angezeigt:', {
-    level: stresslevel,
-    score: window.getStresslevelScore(),
-    text: window.getStresslevelText(),
-    color: window.getStresslevelColor()
-  });
+  console.log('✅ Stresslevel-Content angezeigt');
 };
-
 
 
 // ============================================
