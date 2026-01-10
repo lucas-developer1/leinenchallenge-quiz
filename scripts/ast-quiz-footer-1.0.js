@@ -411,7 +411,7 @@ const ANSWER_MAPPINGS = {
   
   q_visitors: {
     'dreht komplett durch': 3,
-    'ist aufgeregt, bleibt am besuch': 2,
+    'ist aufgeregt, klebt am besuch': 2,
     'geht kurz hin, beruhigt sich dann': 1,
     'bleibt entspannt auf seinem platz': 0
   },
