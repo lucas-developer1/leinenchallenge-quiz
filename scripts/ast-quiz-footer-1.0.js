@@ -439,12 +439,13 @@ window.calculateStresslevel = function() {
       },
       
       // q_visitors: A=3, B=2, C=1, D=0
-      q_visitors: {
-        'dreht komplett durch': 3,
-        'ist aufgeregt, klebt am besuch': 2,
-        'geht kurz hin, beruhigt sich': 1,
-        'bleibt entspannt': 0
-      },
+q_visitors: {
+  'dreht komplett durch': 3,
+  'ist aufgeregt, klebt am besuch': 2,
+  'geht kurz hin, beruhigt sich dann': 1,  // ✅ FIXED
+  'geht kurz hin, beruhigt sich': 1,       // Fallback
+  'bleibt entspannt': 0
+},
       
       // q_sounds: A=3, B=2, C=1, D=0
       q_sounds: {
@@ -454,10 +455,11 @@ window.calculateStresslevel = function() {
         'bleibt gelassen': 0
       },
       
-  q_walk_start: {
-  'dreht durch, ist kaum zu bremsen': 3,  // ← "ist" hinzugefügt
-  'dreht durch, kaum zu bremsen': 3,      // ← Fallback (beide Varianten)
-  'sehr aufgeregt, zieht zur tür': 2,
+q_walk_start: {
+  'dreht durch, ist kaum zu bremsen': 3,
+  'dreht durch, kaum zu bremsen': 3,
+  'ist sehr aufgeregt, zieht zur tür': 2,  // ✅ FIXED
+  'sehr aufgeregt, zieht zur tür': 2,      // Fallback
   'wird etwas aufgeregt': 1,
   'wartet entspannt': 0
 },
@@ -513,10 +515,10 @@ window.calculateStresslevel = function() {
         'meistens ich': 0
       },
       
- q_ignore: {
-  'nein, das schaffe ich nicht': 3,  // ← "das" hinzugefügt
-  'nein, schaffe ich nicht': 3,      // ← Fallback (beide Varianten)
-  'selten': 2,
+q_ignore: {
+  'nein, das schaffe ich nicht': 3,
+  'nein, schaffe ich nicht': 3,
+  'selten – name gibt nicht auf': 2,  // ✅ FIXED
   'manchmal, nicht konsequent': 1,
   'ja, klappt gut': 0
 }
