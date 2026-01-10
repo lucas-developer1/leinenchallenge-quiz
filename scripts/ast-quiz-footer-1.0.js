@@ -386,6 +386,101 @@ const SCORING_CONFIG = {
   q_ignore: { weight: 1.0, invert: true }
 };
 
+// ✅ MAPPINGS HIER DEFINIEREN (außerhalb der Funktion)
+const ANSWER_MAPPINGS = {
+  q_restless: {
+    'ständig': 3,
+    'häufig': 2,
+    'manchmal': 1,
+    'selten oder nie': 0
+  },
+  
+  q_follow: {
+    'ja, ständig': 3,
+    'häufig': 2,
+    'manchmal': 1,
+    'nein, fast nie': 0
+  },
+  
+  q_attention: {
+    'sehr oft': 3,
+    'häufig': 2,
+    'manchmal': 1,
+    'selten oder nie': 0
+  },
+  
+  q_visitors: {
+    'dreht komplett durch': 3,
+    'ist aufgeregt, bleibt am besuch': 2,
+    'geht kurz hin, beruhigt sich dann': 1,
+    'bleibt entspannt auf seinem platz': 0
+  },
+  
+  q_sounds: {
+    'reagiert stark': 3,
+    'wird nervös': 2,
+    'wird kurz aufmerksam': 1,
+    'bleibt meist gelassen': 0
+  },
+  
+  q_walk_start: {
+    'dreht durch, ist kaum zu bremsen': 3,
+    'ist sehr aufgeregt, zieht zur tür': 2,
+    'wird etwas aufgeregt': 1,
+    'wartet entspannt, bis es losgeht': 0
+  },
+  
+  q_walk_after: {
+    'noch nervöser als davor': 3,
+    'ist noch aufgedreht': 2,
+    'braucht etwas zeit zum abschalten': 1,
+    'müde und entspannt': 0
+  },
+  
+  q_alone: {
+    'geht überhaupt nicht': 3,
+    'hat schwierigkeiten damit': 2,
+    'geht meistens gut': 1,
+    'kein problem – schläft oder ruht': 0
+  },
+  
+  q_rest_hours: {
+    'unter 10 stunden': 3,
+    '10-14 stunden': 2,
+    '14-18 stunden': 1,
+    '18-20 stunden oder mehr': 0,
+    'ich bin mir nicht sicher': 1.5
+  },
+  
+  q_retreat: {
+    'nein, kein fester platz': 3,
+    'name liegt mal hier, mal dort': 2,
+    'ja, aber mitten im wohnbereich': 1,
+    'ja, ein ruhiger platz abseits': 0
+  },
+  
+  q_structure: {
+    'gar nicht strukturiert': 3,
+    'wenig strukturiert': 2,
+    'eher strukturiert': 1,
+    'sehr strukturiert': 0
+  },
+  
+  q_control: {
+    'fast immer name': 3,
+    'meistens name': 2,
+    'ausgeglichen': 1,
+    'meistens ich': 0
+  },
+  
+  q_ignore: {
+    'nein, das schaffe ich nicht': 3,
+    'selten – name gibt nicht auf': 2,
+    'manchmal, aber nicht konsequent': 1,
+    'ja, das klappt gut': 0
+  }
+};
+
 window.calculateStresslevel = function() {
   if (!window.quizData) {
     console.warn('⚠️ Keine Quiz-Daten für Stresslevel-Berechnung');
@@ -412,120 +507,8 @@ window.calculateStresslevel = function() {
     
     const normalized = normalizeString(answer);
     
-    // EXAKT nach PDF - Seite 3-4
-    const mappings = {
-      // q_restless: A=3, B=2, C=1, D=0
-      q_restless: {
-        'ständig': 3,
-        'häufig': 2,
-        'manchmal': 1,
-        'selten oder nie': 0
-      },
-      
-      // q_follow: A=3, B=2, C=1, D=0
-      q_follow: {
-        'ja, ständig': 3,
-        'häufig': 2,
-        'manchmal': 1,
-        'nein, fast nie': 0
-      },
-      
-      // q_attention: A=3, B=2, C=1, D=0
-      q_attention: {
-        'sehr oft': 3,
-        'häufig': 2,
-        'manchmal': 1,
-        'selten oder nie': 0
-      },
-      
-      // q_visitors: A=3, B=2, C=1, D=0
-q_visitors: {
-  'dreht komplett durch': 3,
-  'ist aufgeregt, klebt am besuch': 2,
-  'geht kurz hin, beruhigt sich dann': 1,  // ✅ FIXED
-  'geht kurz hin, beruhigt sich': 1,       // Fallback
-  'bleibt entspannt': 0
-},
-      
-      // q_sounds: A=3, B=2, C=1, D=0
-      q_sounds: {
-        'reagiert stark': 3,
-        'wird nervös': 2,
-        'wird kurz aufmerksam': 1,
-        'bleibt gelassen': 0
-      },
-      
-q_walk_start: {
-  'dreht durch, ist kaum zu bremsen': 3,
-  'dreht durch, kaum zu bremsen': 3,
-  'ist sehr aufgeregt, zieht zur tür': 2,  // ✅ FIXED
-  'sehr aufgeregt, zieht zur tür': 2,      // Fallback
-  'wird etwas aufgeregt': 1,
-  'wartet entspannt': 0
-},
-
-      
-      // q_walk_after: A=3, B=2, C=1, D=0
-      q_walk_after: {
-        'noch nervöser als davor': 3,
-        'ist noch aufgedreht': 2,
-        'braucht zeit zum abschalten': 1,
-        'müde und entspannt': 0
-      },
-      
-      // q_alone: A=3, B=2, C=1, D=0
-      q_alone: {
-        'geht überhaupt nicht': 3,
-        'hat schwierigkeiten': 2,
-        'geht meistens gut': 1,
-        'kein problem': 0
-      },
-      
-      // q_rest_hours (INVERTIERT): A=3, B=2, C=1, D=0, E=1.5
-      q_rest_hours: {
-        'unter 10 stunden': 3,
-        '10-14 stunden': 2,
-        '14-18 stunden': 1,
-        '18-20+ stunden': 0,
-        '18-20 stunden oder mehr': 0,
-        'nicht sicher': 1.5
-      },
-      
-      // q_retreat (INVERTIERT): A=3, B=2, C=1, D=0
-      q_retreat: {
-        'nein, kein fester platz': 3,
-        'liegt mal hier, mal dort': 2,
-        'ja, aber mitten im wohnbereich': 1,
-        'ja, ruhiger platz abseits': 0
-      },
-      
-      // q_structure (INVERTIERT): A=3, B=2, C=1, D=0
-      q_structure: {
-        'gar nicht strukturiert': 3,
-        'wenig strukturiert': 2,
-        'eher strukturiert': 1,
-        'sehr strukturiert': 0
-      },
-      
-      // q_control: A=3, B=2, C=1, D=0
-      q_control: {
-        'fast immer name': 3,
-        'meistens name': 2,
-        'ausgeglichen': 1,
-        'meistens ich': 0
-      },
-      
-q_ignore: {
-  'nein, das schaffe ich nicht': 3,
-  'nein, schaffe ich nicht': 3,
-  'selten – name gibt nicht auf': 2,  // ✅ FIXED
-  'manchmal, nicht konsequent': 1,
-  'ja, klappt gut': 0
-}
-
-    };
-    
-    const questionMappings = mappings[qId];
+    // ✅ Verwende ANSWER_MAPPINGS von oben
+    const questionMappings = ANSWER_MAPPINGS[qId];
     if (!questionMappings) {
       console.warn(`⚠️ Keine Mappings für Frage: ${qId}`);
       return 0;
@@ -549,7 +532,7 @@ q_ignore: {
   let maxPossible = 0;
   const details = {};
   
-  console.log('=== STRESSLEVEL BERECHNUNG (PDF-Algorithmus) ===');
+  console.log('\n=== STRESSLEVEL BERECHNUNG (PDF-Algorithmus) ===');
   
   for (const [qId, config] of Object.entries(SCORING_CONFIG)) {
     const answer = getQuizAnswer(qId);
@@ -628,12 +611,12 @@ q_ignore: {
     details: details
   };
   
-  console.log('=== ERGEBNIS ===');
-  console.log('Score:', finalScore);
-  console.log('Level:', stresslevel);
-  console.log('Label:', stresslevelText);
-  console.log('Farbe:', color);
-  console.log('================');
+  console.log('\n=== ERGEBNIS ===');
+  console.log('🎯 Score:', finalScore);
+  console.log('📊 Level:', stresslevel);
+  console.log('🏷️ Label:', stresslevelText);
+  console.log('🎨 Farbe:', color);
+  console.log('================\n');
   
   return result;
 };
@@ -658,6 +641,7 @@ window.getStresslevelText = function() {
 window.getStresslevelColor = function() {
   return window.stresslevelResult ? window.stresslevelResult.color : '#999';
 };
+
 
 
 // ============================================
