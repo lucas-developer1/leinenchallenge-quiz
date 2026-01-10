@@ -1,12 +1,11 @@
 /**
- * AST Quiz Pitch - Footer Script V1.0
+ * AST Quiz Pitch - Footer Script V1.0 (PRODUCTION)
  */
 
-// ===== NEUER SPINNER LOADING SYSTEM =====
+// ===== SPINNER LOADING SYSTEM =====
 (function() {
   'use strict';
   
-  // Konfiguration
   const CONFIG = {
     step1: {
       targetPercent: 24,
@@ -32,7 +31,6 @@
   let spinnerInitialized = false;
   let completedSteps = [];
   
-  // Progress Circle aktualisieren - Mobile-kompatibel
   function updateProgressCircle(percent) {
     const progressCircle = document.getElementById('progress-circle');
     const progressPercentage = document.getElementById('progress-percentage');
@@ -52,7 +50,6 @@
     progressPercentage.textContent = Math.round(percent) + '%';
   }
 
-  // Schritt-Text blinken lassen
   function startBlinking(stepNumber) {
     const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
     if (!stepElement) return;
@@ -74,10 +71,7 @@
     }, CONFIG.blinkInterval);
   }
 
-  // Blinken stoppen und Schritt als fertig markieren
   function stopBlinkingAndMarkDone(stepNumber) {
-    console.log(`🎯 Markiere Schritt ${stepNumber} als fertig`);
-    
     if (blinkIntervalId) {
       clearInterval(blinkIntervalId);
       blinkIntervalId = null;
@@ -89,26 +83,19 @@
     
     const stepElement = document.querySelector(`[data-loading-step="${stepNumber}"]`);
     if (stepElement) {
-      console.log(`✅ Setze Text ${stepNumber} auf schwarz`);
       stepElement.style.color = '#000000';
       stepElement.style.transition = 'color 0.3s ease-in-out';
-    } else {
-      console.warn(`⚠️ Text-Element für Schritt ${stepNumber} nicht gefunden`);
     }
     
     const grayIcon = document.querySelector(`[data-loading-icon="${stepNumber}"][data-icon-state="gray"]`);
     const greenIcon = document.querySelector(`[data-loading-icon="${stepNumber}"][data-icon-state="green"]`);
     
     if (grayIcon && greenIcon) {
-      console.log(`✅ Wechsle Icon ${stepNumber} von grau zu grün`);
       grayIcon.style.display = 'none';
       greenIcon.style.display = 'block';
-    } else {
-      console.warn(`⚠️ Icons für Schritt ${stepNumber} nicht gefunden`);
     }
   }
 
-  // Progress animieren
   function animateProgress(targetPercent, duration, onComplete) {
     const startPercent = currentPercent;
     const startTime = performance.now();
@@ -134,12 +121,10 @@
     requestAnimationFrame(animate);
   }
   
-  // Popup anzeigen
   function showPopup() {
     const popup = document.querySelector('[data-loading-popup="true"]');
     
     if (!popup) {
-      console.warn('⚠️ Popup nicht gefunden');
       startStep3();
       return;
     }
@@ -155,12 +140,10 @@
     });
   }
   
-  // Popup-Auswahl behandeln
   function handlePopupChoice(event) {
     const choice = event.target.getAttribute('data-popup-choice');
     
     localStorage.setItem('lq_popup_answer', choice);
-    console.log('✅ Popup-Antwort gespeichert:', choice);
     
     hidePopup();
     
@@ -169,7 +152,6 @@
     }, 300);
   }
   
-  // Popup ausblenden
   function hidePopup() {
     const popup = document.querySelector('[data-loading-popup="true"]');
     if (!popup) return;
@@ -180,10 +162,8 @@
     }, 300);
   }
   
-  // Schritt 1
   function startStep1() {
     currentStep = 1;
-    console.log('🚀 Schritt 1 startet');
     startBlinking(1);
     
     const earlyMarkDoneDelay = CONFIG.step1.duration - 300;
@@ -193,17 +173,14 @@
     }, earlyMarkDoneDelay);
     
     animateProgress(CONFIG.step1.targetPercent, CONFIG.step1.duration, () => {
-      console.log('✅ Schritt 1 fertig');
       setTimeout(() => {
         startStep2();
       }, 200);
     });
   }
 
-  // Schritt 2
   function startStep2() {
     currentStep = 2;
-    console.log('🚀 Schritt 2 startet');
     startBlinking(2);
     
     const earlyMarkDoneDelay = CONFIG.step2.duration - 300;
@@ -213,18 +190,14 @@
     }, earlyMarkDoneDelay);
     
     animateProgress(CONFIG.step2.targetPercent, CONFIG.step2.duration, () => {
-      console.log('✅ Schritt 2 fertig');
-      
       setTimeout(() => {
         showPopup();
       }, 300);
     });
   }
 
-  // Schritt 3
   function startStep3() {
     currentStep = 3;
-    console.log('🚀 Schritt 3 startet');
     startBlinking(3);
     
     const earlyMarkDoneDelay = CONFIG.step3.duration - 800;
@@ -234,15 +207,12 @@
     }, earlyMarkDoneDelay);
     
     animateProgress(CONFIG.step3.targetPercent, CONFIG.step3.duration, () => {
-      console.log('✅ Schritt 3 fertig - 100% erreicht');
-      
       setTimeout(() => {
         triggerNextStep();
       }, 500);
     });
   }
 
-  // Next Step triggern
   function triggerNextStep() {
     const selectors = [
       '[data-next-button]',
@@ -255,22 +225,17 @@
     for (let selector of selectors) {
       const nextButton = document.querySelector(selector);
       if (nextButton) {
-        console.log('🎯 Klicke Next Button:', selector);
         nextButton.click();
         return;
       }
     }
-    
-    console.warn('⚠️ Kein Next Button gefunden');
   }
   
-  // Prüfen ob Animation laufen soll
   function shouldRunSpinnerAnimation() {
     const currentInputFlowStep = getCurrentInputFlowStep();
     return currentInputFlowStep === 1;
   }
 
-  // Aktuellen InputFlow Step ermitteln
   function getCurrentInputFlowStep() {
     const visibleStep = document.querySelector('[data-form-step][style*="display: block"], [data-form-step]:not([style*="display: none"])');
     if (visibleStep) {
@@ -291,7 +256,6 @@
     return 1;
   }
   
-  // Initialisierung des Spinner-Systems
   function initializeSpinnerSystem() {
     if (spinnerInitialized) return;
     
@@ -350,10 +314,6 @@
       initializeSpinnerSystem();
     }, 300);
   });
-  
-  document.addEventListener('quizDataLoaded', function(event) {
-    console.log('📊 Quiz-Daten geladen (Spinner läuft bereits)');
-  });
 
   window.testLoadingSpinner = function() {
     spinnerInitialized = false;
@@ -365,10 +325,7 @@
 })();
 
 
-// ============================================
-// STRESSLEVEL-ALGORITHMUS (AST) - PDF VERSION
-// EXAKT nach Stress-Score-Algorithmus.pdf
-// ============================================
+// ===== STRESSLEVEL-ALGORITHMUS (PDF VERSION) =====
 
 const SCORING_CONFIG = {
   q_restless: { weight: 1.5, invert: false },
@@ -386,7 +343,6 @@ const SCORING_CONFIG = {
   q_ignore: { weight: 1.0, invert: true }
 };
 
-// ✅ MAPPINGS HIER DEFINIEREN (außerhalb der Funktion)
 const ANSWER_MAPPINGS = {
   q_restless: {
     'ständig': 3,
@@ -483,7 +439,6 @@ const ANSWER_MAPPINGS = {
 
 window.calculateStresslevel = function() {
   if (!window.quizData) {
-    console.warn('⚠️ Keine Quiz-Daten für Stresslevel-Berechnung');
     return null;
   }
   
@@ -492,47 +447,27 @@ window.calculateStresslevel = function() {
     return answer ? String(answer).trim() : null;
   }
   
-  // Normalisierung für robustes Matching
   function normalizeString(str) {
     if (!str) return '';
     return String(str).trim().toLowerCase().replace(/\s+/g, ' ');
   }
   
-  // Antworten zu Punkten mappen (EXAKT nach PDF Seite 3-4)
   function mapAnswerToPoints(qId, answer) {
-    if (!answer) {
-      console.warn(`⚠️ Keine Antwort für ${qId}`);
-      return 0;
-    }
+    if (!answer) return 0;
     
     const normalized = normalizeString(answer);
-    
-    // ✅ Verwende ANSWER_MAPPINGS von oben
     const questionMappings = ANSWER_MAPPINGS[qId];
-    if (!questionMappings) {
-      console.warn(`⚠️ Keine Mappings für Frage: ${qId}`);
-      return 0;
-    }
+    
+    if (!questionMappings) return 0;
     
     const points = questionMappings[normalized];
     
-    if (points === undefined) {
-      console.warn(`⚠️ Unbekannte Antwort für ${qId}: "${answer}"`);
-      console.log(`   Normalized: "${normalized}"`);
-      console.log('   Verfügbare Optionen:', Object.keys(questionMappings));
-      return 0;
-    }
-    
-    console.log(`✅ ${qId}: "${answer}" → ${points} Punkte (weight: ${SCORING_CONFIG[qId].weight}x)`);
-    return points;
+    return points !== undefined ? points : 0;
   }
   
-  // Schritt 1: Gewichtete Summe berechnen (PDF Seite 5)
   let weightedSum = 0;
   let maxPossible = 0;
   const details = {};
-  
-  console.log('\n=== STRESSLEVEL BERECHNUNG (PDF-Algorithmus) ===');
   
   for (const [qId, config] of Object.entries(SCORING_CONFIG)) {
     const answer = getQuizAnswer(qId);
@@ -549,23 +484,15 @@ window.calculateStresslevel = function() {
     };
   }
   
-  console.log('📊 Gewichtete Summe:', weightedSum.toFixed(2));
-  console.log('📊 Max möglich:', maxPossible.toFixed(2), '(13 Fragen × 3 × Gewicht)');
-  
-  // Schritt 2: Basis-Score (0-100) - PDF Seite 5
   let baseScore = (weightedSum / maxPossible) * 100;
-  console.log('📊 Basis-Score:', baseScore.toFixed(2) + '%');
   
-  // Schritt 3: Trigger-Bonus (+5 Punkte) - PDF Seite 5
   const triggerAnswer = getQuizAnswer('q_trigger');
   let triggerBonus = 0;
   if (triggerAnswer && normalizeString(triggerAnswer) === 'eigentlich fast immer') {
     triggerBonus = 5;
     baseScore += triggerBonus;
-    console.log('✅ Trigger-Bonus: +5 Punkte (q_trigger = "Eigentlich fast immer")');
   }
   
-  // Schritt 4: Alters-Modifikator (+10%) - PDF Seite 5
   const age = getQuizAnswer('q_age');
   let ageModifier = 1.0;
   if (age) {
@@ -573,15 +500,11 @@ window.calculateStresslevel = function() {
     if (normalizedAge.includes('welpe') || normalizedAge.includes('senior')) {
       ageModifier = 1.1;
       baseScore *= ageModifier;
-      console.log('✅ Alters-Modifikator: ×1.1 (+10% für Welpe/Senior)');
     }
   }
   
-  // Schritt 5: Grenzen setzen (Min 15, Max 100) - PDF Seite 5
   const finalScore = Math.min(100, Math.max(15, Math.round(baseScore)));
-  console.log('📊 Final Score:', finalScore, '(min: 15, max: 100)');
   
-  // Stresslevel bestimmen (PDF Seite 1)
   let stresslevel = 'low';
   let stresslevelText = 'Niedrig';
   let color = '#4CAF50';
@@ -600,7 +523,7 @@ window.calculateStresslevel = function() {
     color = '#FFC107';
   }
   
-  const result = {
+  return {
     score: finalScore,
     stresslevel: stresslevel,
     stresslevelText: stresslevelText,
@@ -610,21 +533,10 @@ window.calculateStresslevel = function() {
     ageModifier: ageModifier,
     details: details
   };
-  
-  console.log('\n=== ERGEBNIS ===');
-  console.log('🎯 Score:', finalScore);
-  console.log('📊 Level:', stresslevel);
-  console.log('🏷️ Label:', stresslevelText);
-  console.log('🎨 Farbe:', color);
-  console.log('================\n');
-  
-  return result;
 };
 
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
+// ===== HELPER FUNCTIONS =====
 
 window.getStresslevel = function() {
   return window.stresslevelResult ? window.stresslevelResult.stresslevel : null;
@@ -643,20 +555,12 @@ window.getStresslevelColor = function() {
 };
 
 
-
-// ============================================
-// CONTENT ANZEIGEN
-// ============================================
+// ===== CONTENT ANZEIGEN =====
 
 window.showStresslevelContent = function() {
   const stresslevel = window.getStresslevel();
   
-  if (!stresslevel) {
-    console.warn('⚠️ Kein Stresslevel berechnet');
-    return;
-  }
-  
-  console.log('📊 Zeige Content für Stresslevel:', stresslevel);
+  if (!stresslevel) return;
   
   function hideElements(selector) {
     document.querySelectorAll(selector).forEach(el => {
@@ -670,49 +574,35 @@ window.showStresslevelContent = function() {
     });
   }
   
-  // Alle verstecken
   hideElements('[data-stresslevel-content]');
-  
-  // Spezifischen anzeigen (WICHTIG: PDF verwendet "low", "medium", "elevated", "high")
   showElements(`[data-stresslevel-content="${stresslevel}"]`);
   
-  // Score einsetzen
   const scoreSpans = document.querySelectorAll('[data-stresslevel-score="true"]');
   scoreSpans.forEach(span => {
     span.textContent = window.getStresslevelScore();
   });
   
-  // Text einsetzen
   const textSpans = document.querySelectorAll('[data-stresslevel-text="true"]');
   textSpans.forEach(span => {
     span.textContent = window.getStresslevelText();
   });
   
-  // Kategorie einsetzen
   const categorySpans = document.querySelectorAll('[data-stresslevel-category="true"]');
   categorySpans.forEach(span => {
     span.textContent = stresslevel;
   });
   
-  // Farbe einsetzen
   const colorSpans = document.querySelectorAll('[data-stresslevel-color="true"]');
   colorSpans.forEach(span => {
     span.style.color = window.getStresslevelColor();
   });
-  
-  console.log('✅ Stresslevel-Content angezeigt');
 };
 
 
-// ============================================
-// QUIZ-ANTWORTEN IN SPANS ANZEIGEN (AST)
-// ============================================
+// ===== QUIZ-ANTWORTEN IN SPANS ANZEIGEN =====
 
 window.showQuizAnswersInSpans = function() {
-  if (!window.quizData) {
-    console.warn('⚠️ showQuizAnswersInSpans: Keine Quiz-Daten vorhanden');
-    return;
-  }
+  if (!window.quizData) return;
   
   function getQuizAnswer(key) {
     return window.quizData[key] || 'Unbekannt';
@@ -755,14 +645,10 @@ window.showQuizAnswersInSpans = function() {
       span.textContent = answerMappings[key];
     });
   });
-  
-  console.log('✅ Quiz-Antworten in Spans geladen');
 };
 
 
-// ============================================
-// DATUM-BERECHNUNGEN
-// ============================================
+// ===== DATUM-BERECHNUNGEN =====
 
 window.calculateDatesFromQuiz = function() {
   const startDate = new Date();
@@ -810,14 +696,10 @@ window.calculateDatesFromQuiz = function() {
 };
 
 
-// ============================================
-// CONDITIONAL CONTENT
-// ============================================
+// ===== CONDITIONAL CONTENT =====
 
 window.showConditionalContent = function() {
-  if (!window.quizData) {
-    return;
-  }
+  if (!window.quizData) return;
   
   function getQuizAnswer(key) {
     return window.quizData[key] || null;
@@ -829,9 +711,7 @@ window.showConditionalContent = function() {
     const contentRule = element.getAttribute('data-answer-content');
     const [fieldName, expectedAnswer] = contentRule.split(':');
     
-    if (!fieldName || !expectedAnswer) {
-      return;
-    }
+    if (!fieldName || !expectedAnswer) return;
     
     const actualAnswer = getQuizAnswer(fieldName.trim());
     
@@ -849,9 +729,7 @@ window.showConditionalContent = function() {
 };
 
 
-// ============================================
-// QUIZ DATA MANAGEMENT
-// ============================================
+// ===== QUIZ DATA MANAGEMENT =====
 
 document.addEventListener("DOMContentLoaded", function() {
   
@@ -873,9 +751,7 @@ document.addEventListener("DOMContentLoaded", function() {
   
   function getEmailFromStorage() {
     const urlEmail = getEmailFromURL();
-    if (urlEmail) {
-      return urlEmail;
-    }
+    if (urlEmail) return urlEmail;
     
     const email = localStorage.getItem('email') || 
                  localStorage.getItem('ast_useremail') ||
@@ -928,12 +804,7 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   async function fetchQuizData(email) {
-    if (!email) {
-      console.warn('⚠️ fetchQuizData: Keine Email');
-      return null;
-    }
-    
-    console.log('🔍 fetchQuizData: Lade Daten für:', email);
+    if (!email) return null;
     
     try {
       const response = await fetch('https://hook.eu2.make.com/a2xkzso0codv9xirw9sikxq5to93qqgj', {
@@ -947,30 +818,23 @@ document.addEventListener("DOMContentLoaded", function() {
         })
       });
       
-      console.log('📡 Response Status:', response.status);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('✅ Daten empfangen:', data);
-      
       return data;
     } catch (error) {
-      console.error('❌ Fetch Fehler:', error);
       return null;
     }
   }
 
   function makeDataAvailable(data) {
     window.quizData = data;
-    
     localStorage.setItem('quizData', JSON.stringify(data));
     
     if (data.email) {
       localStorage.setItem('email', data.email);
-      console.log('✅ Email in localStorage gespeichert:', data.email);
     }
     
     const event = new CustomEvent('quizDataLoaded', { 
@@ -1007,26 +871,16 @@ document.addEventListener("DOMContentLoaded", function() {
   async function initializeQuizData() {
     const email = getEmailFromStorage();
     
-    console.log('🚀 initializeQuizData: Start mit Email:', email);
-    
     if (getEmailFromURL()) {
-      console.log('🔄 Bereinige Email aus URL');
       cleanURLFromEmailParam();
     }
     
     if (email) {
-      console.log('📞 Rufe fetchQuizData auf für:', email);
       const data = await fetchQuizData(email);
-      console.log('📦 Erhaltene Daten:', data);
       
       if (data) {
-        console.log('✅ Mache Daten verfügbar');
         makeDataAvailable(data);
-      } else {
-        console.warn('⚠️ Keine Daten erhalten von Make');
       }
-    } else {
-      console.warn('⚠️ Keine Email gefunden (weder URL noch localStorage)');
     }
   }
 
@@ -1038,8 +892,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const stresslevelResult = window.calculateStresslevel();
     if (stresslevelResult) {
       window.stresslevelResult = stresslevelResult;
-      
-      console.log('📊 Stresslevel berechnet:', stresslevelResult);
       
       setTimeout(() => {
         window.showStresslevelContent();
@@ -1062,9 +914,8 @@ document.addEventListener("DOMContentLoaded", function() {
   loadLocalDataImmediately();
 
   setTimeout(async () => {
-    console.log('🚀 Starte initializeQuizData');
     await initializeQuizData();
-    console.log('✅ initializeQuizData abgeschlossen');
   }, 500);
 
 });
+
