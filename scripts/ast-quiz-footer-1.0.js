@@ -610,33 +610,33 @@ window.showQuizAnswersInSpans = function() {
   
   const answerMappings = {
     'geschlecht': getQuizAnswer('geschlecht'),
-    'alter': getQuizAnswer('alter'),
-    'haeufigkeit_unruhe': getQuizAnswer('haeufigkeit_unruhe'),
-    'groesster_stressor': getQuizAnswer('groesster_stressor'),
-    'wie_lange_problem': getQuizAnswer('wie_lange_problem'),
-    'laeuft_hinterher': getQuizAnswer('laeuft_hinterher'),
-    'fordert_aufmerksamkeit': getQuizAnswer('fordert_aufmerksamkeit'),
-    'besuch_reaktion': getQuizAnswer('besuch_reaktion'),
-    'geraeusch_reaktion': getQuizAnswer('geraeusch_reaktion'),
-    'anfang_spaziergang': getQuizAnswer('anfang_spaziergang'),
-    'nach_spaziergang': getQuizAnswer('nach_spaziergang'),
-    'alleine_bleiben': getQuizAnswer('alleine_bleiben'),
-    'ruhezeit_stunden': getQuizAnswer('ruhezeit_stunden'),
-    'rueckzugsort': getQuizAnswer('rueckzugsort'),
-    'tagesablauf_struktur': getQuizAnswer('tagesablauf_struktur'),
-    'wer_bestimmt': getQuizAnswer('wer_bestimmt'),
-    'ignorieren_koennen': getQuizAnswer('ignorieren_koennen'),
-    'wie_lange_kampf': getQuizAnswer('wie_lange_kampf'),
-    'ueberfordert': getQuizAnswer('ueberfordert'),
-    'auswirkung_beziehung': getQuizAnswer('auswirkung_beziehung'),
-    'sorgen_gesundheit': getQuizAnswer('sorgen_gesundheit'),
-    'bereits_versucht': getQuizAnswer('bereits_versucht'),
-    'erfolg_versuche': getQuizAnswer('erfolg_versuche'),
-    'wissen_stress': getQuizAnswer('wissen_stress'),
-    'ziel_6_wochen': getQuizAnswer('ziel_6_wochen'),
-    'wichtigster_punkt': getQuizAnswer('wichtigster_punkt'),
-    'zeit_verfuegbar': getQuizAnswer('zeit_verfuegbar'),
-    'motivation': getQuizAnswer('motivation')
+    'alter': getQuizAnswer('q_age'),
+    'haeufigkeit_unruhe': getQuizAnswer('q_restless'),
+    'groesster_stressor': getQuizAnswer('q_trigger'),
+    'wie_lange_problem': getQuizAnswer('q_duration'),
+    'laeuft_hinterher': getQuizAnswer('q_follow'),
+    'fordert_aufmerksamkeit': getQuizAnswer('q_attention'),
+    'besuch_reaktion': getQuizAnswer('q_visitors'),
+    'geraeusch_reaktion': getQuizAnswer('q_sounds'),
+    'anfang_spaziergang': getQuizAnswer('q_walk_start'),
+    'nach_spaziergang': getQuizAnswer('q_walk_after'),
+    'alleine_bleiben': getQuizAnswer('q_alone'),
+    'ruhezeit_stunden': getQuizAnswer('q_rest_hours'),
+    'rueckzugsort': getQuizAnswer('q_retreat'),
+    'tagesablauf_struktur': getQuizAnswer('q_structure'),
+    'wer_bestimmt': getQuizAnswer('q_control'),
+    'ignorieren_koennen': getQuizAnswer('q_ignore'),
+    'wie_lange_kampf': getQuizAnswer('q_struggle'),
+    'ueberfordert': getQuizAnswer('q_overwhelmed'),
+    'auswirkung_beziehung': getQuizAnswer('q_relationship'),
+    'sorgen_gesundheit': getQuizAnswer('q_health'),
+    'bereits_versucht': getQuizAnswer('q_tried'),
+    'erfolg_versuche': getQuizAnswer('q_success'),
+    'wissen_stress': getQuizAnswer('q_knowledge'),
+    'ziel_6_wochen': getQuizAnswer('q_goals'),
+    'wichtigster_punkt': getQuizAnswer('q_priority'),  // ✅ FIXED: q_priority statt wichtigster_punkt
+    'zeit_verfuegbar': getQuizAnswer('q_time'),
+    'motivation': getQuizAnswer('q_motivation')
   };
   
   Object.keys(answerMappings).forEach(key => {
@@ -646,6 +646,7 @@ window.showQuizAnswersInSpans = function() {
     });
   });
 };
+
 
 
 // ===== DATUM-BERECHNUNGEN =====
