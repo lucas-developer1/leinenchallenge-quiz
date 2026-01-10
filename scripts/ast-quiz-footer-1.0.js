@@ -511,15 +511,15 @@ window.calculateStresslevel = function() {
   
   if (finalScore >= 76) {
     stresslevel = 'high';
-    stresslevelText = 'Hoch';
+    stresslevelText = 'Sehr hoch';
     color = '#F44336';
   } else if (finalScore >= 51) {
     stresslevel = 'elevated';
-    stresslevelText = 'Erhöht';
+    stresslevelText = 'Hoch';
     color = '#FF9800';
   } else if (finalScore >= 26) {
     stresslevel = 'medium';
-    stresslevelText = 'Moderat';
+    stresslevelText = 'Mittel';
     color = '#FFC107';
   }
   
