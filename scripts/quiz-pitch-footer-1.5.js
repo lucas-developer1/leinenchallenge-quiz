@@ -668,6 +668,24 @@ window.getDogWeight = function() {
   return localStorage.getItem('dog_weight') || null;
 };
 
+// Ziehgrad in Input-Field schreiben (falls vorhanden)
+window.writeZiehgradToInput = function() {
+  const inputField = document.getElementById('input-ziehgrad');
+  
+  // Wenn Input nicht existiert, einfach return (kein Error)
+  if (!inputField) {
+    return;
+  }
+  
+  const ziehgradText = getZiehgradText();
+  
+  if (ziehgradText && ziehgradText !== 'Unbekannt') {
+    inputField.value = ziehgradText;
+    console.log('✅ Ziehgrad in Input geschrieben:', ziehgradText);
+  }
+};
+
+
 
 // Datum-Berechnungen basierend auf AKTUELLEM deutschen Datum
 window.calculateDatesFromQuiz = function() {
@@ -1208,7 +1226,7 @@ async function initializeQuizData() {
 }
 
   
-  document.addEventListener('quizDataLoaded', function(event) {
+document.addEventListener('quizDataLoaded', function(event) {
     const quizData = event.detail;
     
     updateAllDynamicContent();
@@ -1223,6 +1241,7 @@ async function initializeQuizData() {
       window.ziehgradResult = ziehgradResult;
       setTimeout(() => {
         showZiehgradContent();
+        writeZiehgradToInput(); // NEU: Ziehgrad in Input schreiben
       }, 100);
     }
     
@@ -1232,10 +1251,9 @@ async function initializeQuizData() {
     }, 200);
 
     // Hundegewicht in Spans laden
-setTimeout(() => {
-  showDogWeightInSpans();
-}, 250);
-
+    setTimeout(() => {
+      showDogWeightInSpans();
+    }, 250);
     
     // Datum-Berechnungen
     setTimeout(() => {
@@ -1247,6 +1265,7 @@ setTimeout(() => {
       showConditionalContent();
     }, 400);
   });
+
   
 // Hundegewicht auch sofort laden (falls schon im localStorage)
 setTimeout(() => {
