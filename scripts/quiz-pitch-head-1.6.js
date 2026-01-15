@@ -5,12 +5,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // ✅ GEÄNDERT: Storage-Werte abrufen (anonymous_id, session_id)
-    function getStorageValues() {
-        const anonymous_id = localStorage.getItem('anonymous_id') || '';
-        const session_id = localStorage.getItem('session_id') || '';
-        return { anonymous_id, session_id };
-    }
+function getStorageValues() {
+    const ft_anonymous_id = localStorage.getItem('ft_anonymous_id') || '';
+    const ft_session_id = localStorage.getItem('ft_session_id') || '';
+    return { ft_anonymous_id, ft_session_id }; 
+}
 
     // Email mit Fallback-Logik
     function getEmailFromStorage() {
@@ -37,10 +36,10 @@ document.addEventListener('DOMContentLoaded', function() {
                '';
     }
 
-    // ✅ GEÄNDERT: Redirect-URL bauen (anonymous_id, session_id)
-    function buildRedirectURL(anonymous_id, session_id, email, firstName) {
+    // ✅ GEÄNDERT: Redirect-URL bauen (ft_anonymous_id, ft_session_id)
+    function buildRedirectURL(ft_anonymous_id, ft_session_id, email, firstName) {
         const baseURL = 'https://start.hundetraining.de/product/598602';
-        const customParam = `LC25-${anonymous_id}-${session_id}`;
+        const customParam = `LC25-${ft_anonymous_id}-${ft_session_id}`;
         
         let url = `${baseURL}?custom=${encodeURIComponent(customParam)}`;
         
@@ -57,11 +56,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ✅ GEÄNDERT: OPTIMIERTES PRELOADING: DNS + Prefetch + Prerender
     function preloadCheckoutPageOptimized() {
-        const { anonymous_id, session_id } = getStorageValues();
+        const { ft_anonymous_id, ft_session_id } = getStorageValues();
         const email = getEmailFromStorage();
         const firstName = getFirstName();
         
-        const redirectURL = buildRedirectURL(anonymous_id, session_id, email, firstName);
+        const redirectURL = buildRedirectURL(ft_anonymous_id, ft_session_id, email, firstName);
         
         // 1. DNS-Prefetch (Domain-Lookup beschleunigen)
         const dnsPrefetch = document.createElement('link');
@@ -144,13 +143,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             showButtonLoader(button);
             
-            const { anonymous_id, session_id } = getStorageValues();
+            const { ft_anonymous_id, ft_session_id } = getStorageValues();
             const email = getEmailFromStorage();
             const firstName = getFirstName();
             
             sendWebhookAsync(email);
             
-            const redirectURL = buildRedirectURL(anonymous_id, session_id, email, firstName);
+            const redirectURL = buildRedirectURL(ft_anonymous_id, ft_session_id, email, firstName);
             window.location.href = redirectURL;
         });
     });
