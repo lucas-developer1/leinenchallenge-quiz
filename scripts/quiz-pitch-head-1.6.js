@@ -1,14 +1,15 @@
 /**
- * Leinenchallenge Quiz Pitch - Head Script v1.6
+ * Leinenchallenge Quiz Pitch - Head Script v1.7
  * Checkout Preloading & Redirect Logic
+ * GEÄNDERT: anonymous_id & session_id statt f_aid & f_sid
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Storage-Werte abrufen (f_aid, f_sid)
+    // ✅ GEÄNDERT: Storage-Werte abrufen (anonymous_id, session_id)
     function getStorageValues() {
-        const f_aid = localStorage.getItem('f_aid') || '';
-        const f_sid = localStorage.getItem('f_sid') || '';
-        return { f_aid, f_sid };
+        const anonymous_id = localStorage.getItem('anonymous_id') || '';
+        const session_id = localStorage.getItem('session_id') || '';
+        return { anonymous_id, session_id };
     }
 
     // Email mit Fallback-Logik
@@ -36,10 +37,10 @@ document.addEventListener('DOMContentLoaded', function() {
                '';
     }
 
-    // Redirect-URL bauen
-    function buildRedirectURL(f_aid, f_sid, email, firstName) {
+    // ✅ GEÄNDERT: Redirect-URL bauen (anonymous_id, session_id)
+    function buildRedirectURL(anonymous_id, session_id, email, firstName) {
         const baseURL = 'https://start.hundetraining.de/product/598602';
-        const customParam = `LC25-${f_aid}-${f_sid}`;
+        const customParam = `LC25-${anonymous_id}-${session_id}`;
         
         let url = `${baseURL}?custom=${encodeURIComponent(customParam)}`;
         
@@ -54,13 +55,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return url;
     }
 
-    // ✅ OPTIMIERTES PRELOADING: DNS + Prefetch + Prerender
+    // ✅ GEÄNDERT: OPTIMIERTES PRELOADING: DNS + Prefetch + Prerender
     function preloadCheckoutPageOptimized() {
-        const { f_aid, f_sid } = getStorageValues();
+        const { anonymous_id, session_id } = getStorageValues();
         const email = getEmailFromStorage();
         const firstName = getFirstName();
         
-        const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
+        const redirectURL = buildRedirectURL(anonymous_id, session_id, email, firstName);
         
         // 1. DNS-Prefetch (Domain-Lookup beschleunigen)
         const dnsPrefetch = document.createElement('link');
@@ -124,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         button.style.cursor = 'not-allowed';
     }
 
-    // ✅ v1.6: Button mit ID quiz_btn_step34 - Preloading starten
+    // ✅ v1.7: Button mit ID quiz_btn_step34 - Preloading starten
     const preloadButton = document.getElementById('quiz_btn_step34');
     if (preloadButton) {
         preloadButton.addEventListener('click', function(event) {
@@ -134,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ✅ ALLE Buttons mit data-checkout-redirect: Weiterleitung
+    // ✅ GEÄNDERT: ALLE Buttons mit data-checkout-redirect: Weiterleitung
     const checkoutButtons = document.querySelectorAll('[data-checkout-redirect="true"]');
     
     checkoutButtons.forEach(button => {
@@ -143,13 +144,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             showButtonLoader(button);
             
-            const { f_aid, f_sid } = getStorageValues();
+            const { anonymous_id, session_id } = getStorageValues();
             const email = getEmailFromStorage();
             const firstName = getFirstName();
             
             sendWebhookAsync(email);
             
-            const redirectURL = buildRedirectURL(f_aid, f_sid, email, firstName);
+            const redirectURL = buildRedirectURL(anonymous_id, session_id, email, firstName);
             window.location.href = redirectURL;
         });
     });
@@ -164,3 +165,4 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
