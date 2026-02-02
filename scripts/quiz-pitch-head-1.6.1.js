@@ -1,80 +1,32 @@
 /**
- * Leinenchallenge Quiz Pitch - Head Script v1.8
+ * Leinenchallenge Quiz Pitch - Head Script v1.6.1
  * MIT A/B-TEST FÜR ZAHLUNGSPLÄNE
  */
 
 document.addEventListener('DOMContentLoaded', function() {
 
-  // ===== NEU: A/B-TEST KONFIGURATION =====
-  const PAYMENT_PLAN_TEST = {
-    testName: 'checkout_plan_test',
-    variants: ['A', 'B', 'C'],
-    plans: {
-      'A': '1371536',  // Zahlungsplan A
-      'B': '1338353',  // Zahlungsplan B
-      'C': '1371557'   // Zahlungsplan C
-    },
-    split: [33, 33, 34]  // Prozentuale Verteilung
+  // ===== ZAHLUNGSPLAN-MAPPING =====
+  const PLAN_IDS = {
+    'CONTROL': '1371536',
+    'VARIANT_A': '1338353',
+    'VARIANT_B': '1371557'
   };
 
-  // ===== NEU: Variante ermitteln oder zuweisen =====
-  function getOrAssignVariant() {
-    const storageKey = `ab_${PAYMENT_PLAN_TEST.testName}`;
-    
-    // 1. Prüfe URL-Parameter (für Testing)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlVariant = urlParams.get('variant');
-    if (urlVariant && PAYMENT_PLAN_TEST.variants.includes(urlVariant)) {
-      localStorage.setItem(storageKey, urlVariant);
-      setCookie(storageKey, urlVariant, 30);
-      console.log('🎯 A/B Variante aus URL:', urlVariant);
-      return urlVariant;
+  // ===== Variante von FinishFlow holen =====
+  function getVariantFromFinishFlow() {
+    // Methode 1: Über FinishFlow Instanz
+    if (window.finishFlowInstance && typeof window.finishFlowInstance.getVariant === 'function') {
+      return window.finishFlowInstance.getVariant();
     }
     
-    // 2. Prüfe Cookie
-    const cookieVariant = getCookie(storageKey);
-    if (cookieVariant && PAYMENT_PLAN_TEST.variants.includes(cookieVariant)) {
-      console.log('🎯 A/B Variante aus Cookie:', cookieVariant);
-      return cookieVariant;
+    // Methode 2: Über statische Methode
+    if (typeof FinishFlow !== 'undefined' && FinishFlow.getVariant) {
+      return FinishFlow.getVariant('checkout_plan_test');
     }
     
-    // 3. Prüfe localStorage
-    const storedVariant = localStorage.getItem(storageKey);
-    if (storedVariant && PAYMENT_PLAN_TEST.variants.includes(storedVariant)) {
-      console.log('🎯 A/B Variante aus localStorage:', storedVariant);
-      return storedVariant;
-    }
-    
-    // 4. Neue Variante zuweisen
-    const newVariant = assignRandomVariant();
-    localStorage.setItem(storageKey, newVariant);
-    setCookie(storageKey, newVariant, 30);
-    console.log('🎲 Neue A/B Variante zugewiesen:', newVariant);
-    
-    // Tracking an FinishTrack senden (falls vorhanden)
-    if (typeof FinishTrack !== 'undefined' && FinishTrack.experiment) {
-      FinishTrack.experiment(PAYMENT_PLAN_TEST.testName, newVariant);
-    }
-    
-    return newVariant;
-  }
-
-  function assignRandomVariant() {
-    const random = Math.random() * 100;
-    let cumulative = 0;
-    
-    for (let i = 0; i < PAYMENT_PLAN_TEST.split.length; i++) {
-      cumulative += PAYMENT_PLAN_TEST.split[i];
-      if (random < cumulative) {
-        return PAYMENT_PLAN_TEST.variants[i];
-      }
-    }
-    return PAYMENT_PLAN_TEST.variants[0];
-  }
-
-  function setCookie(name, value, days) {
-    const expires = new Date(Date.now() + days * 864e5).toUTCString();
-    document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
+    // Methode 3: Direkt aus localStorage/Cookie
+    const storageKey = 'ab_checkout_plan_test';
+    return localStorage.getItem(storageKey) || getCookie(storageKey) || 'CONTROL';
   }
 
   function getCookie(name) {
@@ -84,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return null;
   }
 
-  // ===== BESTEHENDE FUNKTIONEN (unverändert) =====
+  // ===== Bestehende Funktionen =====
   function getStorageValues() {
     const ft_anonymous_id = localStorage.getItem('ft_anonymous_id') || '';
     const ft_session_id = localStorage.getItem('ft_session_id') || '';
@@ -114,14 +66,14 @@ document.addEventListener('DOMContentLoaded', function() {
            '';
   }
 
-  // ✅ GEÄNDERT: Redirect-URL mit A/B-Test Zahlungsplan
+  // ===== Redirect-URL mit FinishFlow-Variante =====
   function buildRedirectURL(ft_anonymous_id, ft_session_id, email, firstName) {
     const baseURL = 'https://start.hundetraining.de/product/598602';
     const customParam = `LC25-${ft_anonymous_id}-${ft_session_id}`;
     
-    // ===== NEU: Zahlungsplan basierend auf Variante =====
-    const variant = getOrAssignVariant();
-    const planId = PAYMENT_PLAN_TEST.plans[variant];
+    // Variante von FinishFlow holen
+    const variant = getVariantFromFinishFlow();
+    const planId = PLAN_IDS[variant] || PLAN_IDS['CONTROL'];
     
     let url = `${baseURL}?plan=${planId}&hide_plans&custom=${encodeURIComponent(customParam)}`;
     
@@ -133,13 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
       url += `&first_name=${encodeURIComponent(firstName)}`;
     }
     
-    console.log(`🔗 Redirect URL gebaut (Variante ${variant}, Plan ${planId}):`, url);
+    console.log(`🔗 Redirect: Variante ${variant} → Plan ${planId}`);
     
     return url;
   }
 
-  // ===== REST DES CODES BLEIBT UNVERÄNDERT =====
-  
+  // ===== Preloading =====
   function preloadCheckoutPageOptimized() {
     const { ft_anonymous_id, ft_session_id } = getStorageValues();
     const email = getEmailFromStorage();
@@ -169,28 +120,27 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(prerender);
   }
 
+  // ===== Webhook =====
   function sendWebhookAsync(email) {
     if (!email) return;
 
-    // ===== NEU: Variante im Webhook mitsenden =====
-    const variant = getOrAssignVariant();
+    const variant = getVariantFromFinishFlow();
 
     fetch('https://hook.eu2.make.com/bvwwlwpf8e55ta97akfieabw39309o5c', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email,
         action: 'checkout_redirect_clicked',
-        ab_variant: variant,  // NEU
-        ab_test: PAYMENT_PLAN_TEST.testName,  // NEU
+        ab_variant: variant,
+        ab_test: 'checkout_plan_test',
         timestamp: new Date().toISOString()
       }),
       keepalive: true
     }).catch(() => {});
   }
 
+  // ===== Button Loader =====
   function showButtonLoader(button) {
     button.setAttribute('data-original-text', button.innerHTML);
     
@@ -208,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
     button.style.cursor = 'not-allowed';
   }
 
+  // ===== Event Listeners =====
   const preloadButton = document.getElementById('quiz_btn_step34');
   if (preloadButton) {
     preloadButton.addEventListener('click', function(event) {
@@ -236,38 +187,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // ===== NEU: Debug-Funktion für A/B-Test =====
+  // ===== Debug =====
   window.debugABTest = function() {
-    const storageKey = `ab_${PAYMENT_PLAN_TEST.testName}`;
     console.log('=== A/B TEST DEBUG ===');
-    console.log('Test Name:', PAYMENT_PLAN_TEST.testName);
-    console.log('Aktuelle Variante:', getOrAssignVariant());
-    console.log('Zahlungsplan:', PAYMENT_PLAN_TEST.plans[getOrAssignVariant()]);
-    console.log('Cookie:', getCookie(storageKey));
-    console.log('localStorage:', localStorage.getItem(storageKey));
-  };
-
-  // ===== NEU: Variante manuell setzen (für Testing) =====
-  window.setABVariant = function(variant) {
-    if (!PAYMENT_PLAN_TEST.variants.includes(variant)) {
-      console.error('Ungültige Variante. Erlaubt:', PAYMENT_PLAN_TEST.variants);
-      return;
-    }
-    const storageKey = `ab_${PAYMENT_PLAN_TEST.testName}`;
-    localStorage.setItem(storageKey, variant);
-    setCookie(storageKey, variant, 30);
-    console.log('✅ Variante gesetzt:', variant);
-    console.log('🔄 Seite neu laden um Änderung zu sehen');
+    console.log('FinishFlow Variante:', getVariantFromFinishFlow());
+    console.log('Zugeordneter Plan:', PLAN_IDS[getVariantFromFinishFlow()]);
   };
 
 });
 
-// Spinner-Animation
+// Spinner CSS
 const style = document.createElement('style');
-style.textContent = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
+style.textContent = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
 document.head.appendChild(style);
