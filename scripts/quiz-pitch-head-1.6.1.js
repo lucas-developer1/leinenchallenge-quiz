@@ -11,9 +11,9 @@ const AB_TEST = {
   name: 'checkout_plan_test',
   variants: ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
   plans: {
-    'CONTROL': '1371557',   // ← Geändert
+    'CONTROL': '1338353',   // ← Geändert
     'VARIANT_A': '1371536', // ← Geändert
-    'VARIANT_B': '1338353'  // ← Geändert
+    'VARIANT_B': '1371557'  // ← Geändert
   },
   split: [33, 33, 34]
 };
