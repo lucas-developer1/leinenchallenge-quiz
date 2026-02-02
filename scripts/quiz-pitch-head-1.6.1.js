@@ -5,17 +5,18 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
-  // ===== A/B-TEST KONFIGURATION =====
-  const AB_TEST = {
-    name: 'checkout_plan_test',
-    variants: ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
-    plans: {
-      'CONTROL': '1371536',
-      'VARIANT_A': '1338353',
-      'VARIANT_B': '1371557'
-    },
-    split: [33, 33, 34]
-  };
+
+// ===== A/B-TEST KONFIGURATION =====
+const AB_TEST = {
+  name: 'checkout_plan_test',
+  variants: ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
+  plans: {
+    'CONTROL': '1371557',   // ← Geändert
+    'VARIANT_A': '1371536', // ← Geändert
+    'VARIANT_B': '1338353'  // ← Geändert
+  },
+  split: [33, 33, 34]
+};
 
   // ===== COOKIE HELPERS =====
   function setCookie(name, value, days) {
