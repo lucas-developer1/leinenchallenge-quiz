@@ -1,32 +1,26 @@
 /**
- * Leinenchallenge Quiz Pitch - Head Script v1.6.1
- * MIT A/B-TEST FÜR ZAHLUNGSPLÄNE
+ * Leinenchallenge Quiz Pitch - Head Script v1.8
+ * MIT A/B-TEST FÜR ZAHLUNGSPLÄNE + FINISHTRACK INTEGRATION
  */
 
 document.addEventListener('DOMContentLoaded', function() {
 
-  // ===== ZAHLUNGSPLAN-MAPPING =====
-  const PLAN_IDS = {
-    'CONTROL': '1371536',
-    'VARIANT_A': '1338353',
-    'VARIANT_B': '1371557'
+  // ===== A/B-TEST KONFIGURATION =====
+  const AB_TEST = {
+    name: 'checkout_plan_test',
+    variants: ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
+    plans: {
+      'CONTROL': '1371536',
+      'VARIANT_A': '1338353',
+      'VARIANT_B': '1371557'
+    },
+    split: [33, 33, 34]
   };
 
-  // ===== Variante von FinishFlow holen =====
-  function getVariantFromFinishFlow() {
-    // Methode 1: Über FinishFlow Instanz
-    if (window.finishFlowInstance && typeof window.finishFlowInstance.getVariant === 'function') {
-      return window.finishFlowInstance.getVariant();
-    }
-    
-    // Methode 2: Über statische Methode
-    if (typeof FinishFlow !== 'undefined' && FinishFlow.getVariant) {
-      return FinishFlow.getVariant('checkout_plan_test');
-    }
-    
-    // Methode 3: Direkt aus localStorage/Cookie
-    const storageKey = 'ab_checkout_plan_test';
-    return localStorage.getItem(storageKey) || getCookie(storageKey) || 'CONTROL';
+  // ===== COOKIE HELPERS =====
+  function setCookie(name, value, days) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${value}; expires=${expires}; path=/; SameSite=Lax`;
   }
 
   function getCookie(name) {
@@ -36,7 +30,90 @@ document.addEventListener('DOMContentLoaded', function() {
     return null;
   }
 
-  // ===== Bestehende Funktionen =====
+  // ===== VARIANTE ZUWEISEN =====
+  function assignRandomVariant() {
+    const random = Math.random() * 100;
+    let cumulative = 0;
+    
+    for (let i = 0; i < AB_TEST.split.length; i++) {
+      cumulative += AB_TEST.split[i];
+      if (random < cumulative) {
+        return AB_TEST.variants[i];
+      }
+    }
+    return AB_TEST.variants[0];
+  }
+
+  function getOrAssignVariant() {
+    const storageKey = `ab_${AB_TEST.name}`;
+    
+    // 1. URL-Parameter prüfen
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlVariant = urlParams.get('variant');
+    if (urlVariant && AB_TEST.variants.includes(urlVariant)) {
+      localStorage.setItem(storageKey, urlVariant);
+      setCookie(storageKey, urlVariant, 30);
+      return urlVariant;
+    }
+    
+    // 2. Cookie prüfen
+    const cookieVariant = getCookie(storageKey);
+    if (cookieVariant && AB_TEST.variants.includes(cookieVariant)) {
+      return cookieVariant;
+    }
+    
+    // 3. localStorage prüfen
+    const storedVariant = localStorage.getItem(storageKey);
+    if (storedVariant && AB_TEST.variants.includes(storedVariant)) {
+      return storedVariant;
+    }
+    
+    // 4. Neue Variante zuweisen
+    const newVariant = assignRandomVariant();
+    localStorage.setItem(storageKey, newVariant);
+    setCookie(storageKey, newVariant, 30);
+    
+    return newVariant;
+  }
+
+  // ===== FINISHTRACK EXPERIMENT TRACKING =====
+  function trackExperimentToFinishTrack(variant) {
+    // Warten bis FinishTrack verfügbar
+    const maxAttempts = 20;
+    let attempts = 0;
+    
+    const tryTrack = () => {
+      attempts++;
+      
+      if (typeof FinishTrack !== 'undefined') {
+        // Methode 1: experiment() falls verfügbar
+        if (typeof FinishTrack.experiment === 'function') {
+          FinishTrack.experiment(AB_TEST.name, variant);
+          console.log('📊 FinishTrack.experiment() gesendet:', AB_TEST.name, variant);
+          return;
+        }
+        
+        // Methode 2: track() als Fallback
+        if (typeof FinishTrack.track === 'function') {
+          FinishTrack.track('experiment_viewed', {
+            experiment_id: AB_TEST.name,
+            variant_id: variant
+          });
+          console.log('📊 FinishTrack.track() gesendet:', AB_TEST.name, variant);
+          return;
+        }
+      }
+      
+      // Retry
+      if (attempts < maxAttempts) {
+        setTimeout(tryTrack, 200);
+      }
+    };
+    
+    tryTrack();
+  }
+
+  // ===== STORAGE VALUES =====
   function getStorageValues() {
     const ft_anonymous_id = localStorage.getItem('ft_anonymous_id') || '';
     const ft_session_id = localStorage.getItem('ft_session_id') || '';
@@ -46,14 +123,11 @@ document.addEventListener('DOMContentLoaded', function() {
   function getEmailFromStorage() {
     const urlParams = new URLSearchParams(window.location.search);
     const urlEmail = urlParams.get('email');
-    if (urlEmail) {
-      return urlEmail;
-    }
+    if (urlEmail) return urlEmail;
     
-    const email = localStorage.getItem('email') || 
-                 localStorage.getItem('lc_useremail') || 
-                 localStorage.getItem('encryptedEmail');
-    return email || '';
+    return localStorage.getItem('email') || 
+           localStorage.getItem('lc_useremail') || 
+           localStorage.getItem('encryptedEmail') || '';
   }
 
   function getFirstName() {
@@ -62,18 +136,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     return localStorage.getItem('fn') || 
            localStorage.getItem('first_name') || 
-           localStorage.getItem('firstName') || 
-           '';
+           localStorage.getItem('firstName') || '';
   }
 
-  // ===== Redirect-URL mit FinishFlow-Variante =====
+  // ===== REDIRECT URL BAUEN =====
   function buildRedirectURL(ft_anonymous_id, ft_session_id, email, firstName) {
     const baseURL = 'https://start.hundetraining.de/product/598602';
     const customParam = `LC25-${ft_anonymous_id}-${ft_session_id}`;
     
-    // Variante von FinishFlow holen
-    const variant = getVariantFromFinishFlow();
-    const planId = PLAN_IDS[variant] || PLAN_IDS['CONTROL'];
+    const variant = getOrAssignVariant();
+    const planId = AB_TEST.plans[variant];
     
     let url = `${baseURL}?plan=${planId}&hide_plans&custom=${encodeURIComponent(customParam)}`;
     
@@ -90,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return url;
   }
 
-  // ===== Preloading =====
+  // ===== PRELOADING =====
   function preloadCheckoutPageOptimized() {
     const { ft_anonymous_id, ft_session_id } = getStorageValues();
     const email = getEmailFromStorage();
@@ -98,15 +170,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const redirectURL = buildRedirectURL(ft_anonymous_id, ft_session_id, email, firstName);
     
-    const dnsPrefetch = document.createElement('link');
-    dnsPrefetch.rel = 'dns-prefetch';
-    dnsPrefetch.href = 'https://start.hundetraining.de';
-    document.head.appendChild(dnsPrefetch);
-    
-    const preconnect = document.createElement('link');
-    preconnect.rel = 'preconnect';
-    preconnect.href = 'https://start.hundetraining.de';
-    document.head.appendChild(preconnect);
+    ['dns-prefetch', 'preconnect'].forEach(rel => {
+      const link = document.createElement('link');
+      link.rel = rel;
+      link.href = 'https://start.hundetraining.de';
+      document.head.appendChild(link);
+    });
     
     const prefetch = document.createElement('link');
     prefetch.rel = 'prefetch';
@@ -120,11 +189,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(prerender);
   }
 
-  // ===== Webhook =====
+  // ===== WEBHOOK =====
   function sendWebhookAsync(email) {
     if (!email) return;
 
-    const variant = getVariantFromFinishFlow();
+    const variant = getOrAssignVariant();
 
     fetch('https://hook.eu2.make.com/bvwwlwpf8e55ta97akfieabw39309o5c', {
       method: 'POST',
@@ -133,14 +202,15 @@ document.addEventListener('DOMContentLoaded', function() {
         email: email,
         action: 'checkout_redirect_clicked',
         ab_variant: variant,
-        ab_test: 'checkout_plan_test',
+        ab_test: AB_TEST.name,
+        plan_id: AB_TEST.plans[variant],
         timestamp: new Date().toISOString()
       }),
       keepalive: true
     }).catch(() => {});
   }
 
-  // ===== Button Loader =====
+  // ===== BUTTON LOADER =====
   function showButtonLoader(button) {
     button.setAttribute('data-original-text', button.innerHTML);
     
@@ -158,13 +228,11 @@ document.addEventListener('DOMContentLoaded', function() {
     button.style.cursor = 'not-allowed';
   }
 
-  // ===== Event Listeners =====
+  // ===== EVENT LISTENERS =====
   const preloadButton = document.getElementById('quiz_btn_step34');
   if (preloadButton) {
-    preloadButton.addEventListener('click', function(event) {
-      setTimeout(() => {
-        preloadCheckoutPageOptimized();
-      }, 300);
+    preloadButton.addEventListener('click', function() {
+      setTimeout(preloadCheckoutPageOptimized, 300);
     });
   }
 
@@ -187,11 +255,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // ===== Debug =====
+  // ===== BEIM LADEN: Variante ermitteln & tracken =====
+  const currentVariant = getOrAssignVariant();
+  console.log('🎯 A/B-Test Variante:', currentVariant, '→ Plan:', AB_TEST.plans[currentVariant]);
+  
+  // An FinishTrack senden
+  trackExperimentToFinishTrack(currentVariant);
+
+  // ===== DEBUG FUNKTIONEN =====
   window.debugABTest = function() {
+    const variant = getOrAssignVariant();
     console.log('=== A/B TEST DEBUG ===');
-    console.log('FinishFlow Variante:', getVariantFromFinishFlow());
-    console.log('Zugeordneter Plan:', PLAN_IDS[getVariantFromFinishFlow()]);
+    console.log('Test:', AB_TEST.name);
+    console.log('Variante:', variant);
+    console.log('Plan ID:', AB_TEST.plans[variant]);
+    console.log('Cookie:', getCookie(`ab_${AB_TEST.name}`));
+    console.log('localStorage:', localStorage.getItem(`ab_${AB_TEST.name}`));
+  };
+
+  window.setABVariant = function(variant) {
+    if (!AB_TEST.variants.includes(variant)) {
+      console.error('❌ Ungültig. Erlaubt:', AB_TEST.variants);
+      return;
+    }
+    const key = `ab_${AB_TEST.name}`;
+    localStorage.setItem(key, variant);
+    setCookie(key, variant, 30);
+    console.log('✅ Variante gesetzt:', variant, '- Seite neu laden!');
   };
 
 });
