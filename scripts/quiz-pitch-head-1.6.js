@@ -41,7 +41,7 @@ function getStorageValues() {
         const baseURL = 'https://start.hundetraining.de/product/598602';
         const customParam = `LC25-${ft_anonymous_id}-${ft_session_id}`;
         
-        let url = `${baseURL}?plan=${planId}&hide_plans&custom=${encodeURIComponent(customParam)}`;
+        let url = `${baseURL}?hide_plans&custom=${encodeURIComponent(customParam)}`;
         
         if (email) {
             url += `&email=${encodeURIComponent(email)}`;
