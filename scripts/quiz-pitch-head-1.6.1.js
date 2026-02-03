@@ -168,6 +168,20 @@ const AB_TEST = {
     return url;
   }
 
+ // ===== PREISE AKTUALISIEREN =====
+function updatePriceDisplays() {
+  const variant = getOrAssignVariant();
+  const price = AB_TEST.prices[variant];
+  
+  const priceSpans = document.querySelectorAll('[data-ab-price="true"]');
+  priceSpans.forEach(span => {
+    span.textContent = price;
+  });
+  
+  console.log('💰 Preise aktualisiert:', price, `(${priceSpans.length} Elemente)`);
+}
+
+  
   // ===== PRELOADING =====
   function preloadCheckoutPageOptimized() {
     const { ft_anonymous_id, ft_session_id } = getStorageValues();
@@ -261,25 +275,12 @@ const AB_TEST = {
     });
   });
 
-  // ===== BEIM LADEN: Variante ermitteln & tracken =====
-  const currentVariant = getOrAssignVariant();
-  console.log('🎯 A/B-Test Variante:', currentVariant, '→ Plan:', AB_TEST.plans[currentVariant]);
+// ===== BEIM LADEN: Variante ermitteln & tracken =====
+const currentVariant = getOrAssignVariant();
+console.log('🎯 A/B-Test Variante:', currentVariant, '→ Plan:', AB_TEST.plans[currentVariant]);
 
- // ===== PREISE AKTUALISIEREN =====
-function updatePriceDisplays() {
-  const variant = getOrAssignVariant();
-  const price = AB_TEST.prices[variant];
-  
-  const priceSpans = document.querySelectorAll('[data-ab-price="true"]');
-  priceSpans.forEach(span => {
-    span.textContent = price;
-  });
-  
-  console.log('💰 Preise aktualisiert:', price, `(${priceSpans.length} Elemente)`);
-}
-  
-  // An FinishTrack senden
-  trackExperimentToFinishTrack(currentVariant);
+trackExperimentToFinishTrack(currentVariant);
+updatePriceDisplays();  // ← NEU
 
   // ===== DEBUG FUNKTIONEN =====
   window.debugABTest = function() {
