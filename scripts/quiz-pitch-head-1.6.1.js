@@ -1,5 +1,5 @@
 /**
- * Leinenchallenge Quiz Pitch - Head Script v1.8
+ * Leinenchallenge Quiz Pitch - Head Script v1.6.1
  * MIT A/B-TEST FÜR ZAHLUNGSPLÄNE + FINISHTRACK INTEGRATION
  */
 
@@ -11,9 +11,14 @@ const AB_TEST = {
   name: 'checkout_plan_test',
   variants: ['CONTROL', 'VARIANT_A', 'VARIANT_B'],
   plans: {
-    'CONTROL': '1338353',   // ← Geändert
-    'VARIANT_A': '1371536', // ← Geändert
-    'VARIANT_B': '1371557'  // ← Geändert
+    'CONTROL': '1338353',
+    'VARIANT_A': '1371536',
+    'VARIANT_B': '1371557'
+  },
+  prices: {
+    'CONTROL': '98€',
+    'VARIANT_A': '78€',
+    'VARIANT_B': '128€'
   },
   split: [33, 33, 34]
 };
@@ -259,6 +264,19 @@ const AB_TEST = {
   // ===== BEIM LADEN: Variante ermitteln & tracken =====
   const currentVariant = getOrAssignVariant();
   console.log('🎯 A/B-Test Variante:', currentVariant, '→ Plan:', AB_TEST.plans[currentVariant]);
+
+ // ===== PREISE AKTUALISIEREN =====
+function updatePriceDisplays() {
+  const variant = getOrAssignVariant();
+  const price = AB_TEST.prices[variant];
+  
+  const priceSpans = document.querySelectorAll('[data-ab-price="true"]');
+  priceSpans.forEach(span => {
+    span.textContent = price;
+  });
+  
+  console.log('💰 Preise aktualisiert:', price, `(${priceSpans.length} Elemente)`);
+}
   
   // An FinishTrack senden
   trackExperimentToFinishTrack(currentVariant);
