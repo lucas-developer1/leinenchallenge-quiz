@@ -1,5 +1,5 @@
 /**
- * Leinenchallenge Quiz Pitch - Head Script v1.7
+ * Leinenchallenge Quiz Pitch - Head Script v1.6
  * Checkout Preloading & Redirect Logic
  * GEÄNDERT: anonymous_id & session_id statt f_aid & f_sid
  */
