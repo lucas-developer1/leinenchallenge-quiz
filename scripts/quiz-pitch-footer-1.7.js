@@ -16,12 +16,21 @@
     if (advanced) return;
     advanced = true;
 
-    // Strategie 1: [data-next-button] im sichtbaren Step
+    // Next-Button NUR in Step 1 finden und klicken
+    var step1 = document.querySelector('[data-form-step="1"]');
+    if (step1) {
+      var btn = step1.querySelector('[data-next-button]');
+      if (btn) {
+        btn.click();
+        return;
+      }
+    }
+
+    // Fallback: Erster sichtbarer Step
     var steps = document.querySelectorAll('[data-form-step]');
     for (var i = 0; i < steps.length; i++) {
       var step = steps[i];
-      var display = step.style.display || window.getComputedStyle(step).display;
-      if (display !== 'none') {
+      if (window.getComputedStyle(step).display !== 'none') {
         var btn = step.querySelector('[data-next-button]');
         if (btn) {
           btn.click();
@@ -29,26 +38,6 @@
         }
       }
     }
-
-    // Strategie 2: Erster [data-next-button] auf der Seite
-    var fallbackBtn = document.querySelector('[data-next-button]');
-    if (fallbackBtn) {
-      fallbackBtn.click();
-      return;
-    }
-
-    // Strategie 3: FinishFlow Event
-    document.dispatchEvent(new CustomEvent('finishflow:next'));
-
-    // Strategie 4: Manueller Step-Wechsel
-    setTimeout(function() {
-      var step1 = document.querySelector('[data-form-step="1"]');
-      var step2 = document.querySelector('[data-form-step="2"]');
-      if (step1 && step2) {
-        step1.style.display = 'none';
-        step2.style.display = 'block';
-      }
-    }, 300);
   }
 
   function tryAdvance() {
