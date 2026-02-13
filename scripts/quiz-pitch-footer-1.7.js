@@ -1,11 +1,10 @@
 /**
  * Leinenchallenge Quiz Pitch - Footer Script V1.7
- * NEU: Simple Spinner Advance-Logik (ersetzt alten 3-Schritt-Spinner)
+ * GEÄNDERT: Alter 3-Schritt-Spinner entfernt, ersetzt durch simple Advance-Logik
  * Ziehgrad-Berechnung, Quiz-Daten, Timer System
  */
 
-
-// ===== SIMPLE SPINNER ADVANCE LOGIK =====
+// ===== SIMPLE SPINNER ADVANCE LOGIK (ersetzt alten 3-Schritt-Spinner) =====
 (function() {
   var advanced = false;
   var minDisplayTime = 1500;  // Min. 1.5s Spinner anzeigen
@@ -16,7 +15,7 @@
     if (advanced) return;
     advanced = true;
 
-    // Next-Button NUR in Step 1 finden und klicken
+    // Next-Button in Step 1 finden und klicken
     var step1 = document.querySelector('[data-form-step="1"]');
     if (step1) {
       var btn = step1.querySelector('[data-next-button]');
@@ -147,11 +146,17 @@ window.calculateZiehgrad = function() {
   const bedingung2 = (staerke === 'So stark, dass ich die Balance verliere' || staerke === 'Mein Arm tut danach weh') &&
                      (aufmerksamkeit === 'Fast nie' || aufmerksamkeit === 'Selten');
   
-  if (bedingung1) multiplier *= 1.1;
-  if (bedingung2) multiplier *= 1.1;
+  if (bedingung1) {
+    multiplier *= 1.1;
+  }
+  
+  if (bedingung2) {
+    multiplier *= 1.1;
+  }
   
   const finalScore = Math.round(totalScore * multiplier);
   
+  // Ziehgrad bestimmen
   let ziehgrad = 'niedrig';
   let ziehgradText = 'Niedrig';
   if (finalScore >= 106) {
@@ -196,71 +201,141 @@ window.getZiehgradText = function() {
   return window.ziehgradResult ? window.ziehgradResult.ziehgradText : 'Unbekannt';
 };
 
+// Content basierend auf Ziehgrad anzeigen
 window.showZiehgradContent = function() {
   const ziehgrad = getZiehgrad();
   if (!ziehgrad) return;
   
+  // Alle Ziehgrad-Inhalte verstecken
   hideElements('[data-ziehgrad-content]');
+  
+  // Spezifischen Ziehgrad-Inhalt anzeigen
   showElements(`[data-ziehgrad-content="${ziehgrad}"]`);
   
-  document.querySelectorAll('[data-ziehgrad-score="true"]').forEach(span => {
+  // Score in Spans einsetzen
+  const scoreSpans = document.querySelectorAll('[data-ziehgrad-score="true"]');
+  scoreSpans.forEach(span => {
     span.textContent = getZiehgradScore();
   });
   
-  document.querySelectorAll('[data-ziehgrad-text="true"]').forEach(span => {
+ // Ziehgrad-Text in Spans einsetzen
+  const textSpans = document.querySelectorAll('[data-ziehgrad-text="true"]');
+  textSpans.forEach(span => {
     span.textContent = getZiehgradText();
   });
 };
 
-// Quiz-Antworten in Spans
+// Funktion für direkte Quiz-Antworten in Spans
 window.showQuizAnswersInSpans = function() {
-  if (!window.quizData) return;
+  if (!window.quizData) {
+    return;
+  }
   
-  const answerMappings = {
-    'motivation': 'motivation',
-    'wichtigster_punkt': 'wichtigster_punkt',
-    'alter': 'alter',
-    'geschlecht': 'geschlecht',
-    'haeufigkeit_ziehen': 'haeufigkeit_ziehen',
-    'staerke_ziehen': 'staerke_ziehen',
-    'zeit_verfuegbar': 'zeit_verfuegbar',
-    'ziel_30_tage': 'ziel_30_tage',
-    'woher_hund': 'woher_hund',
-    'wie_lange_schon': 'wie_lange_schon'
-  };
+  // Motivation
+  const motivationSpans = document.querySelectorAll('[data-quiz-answer="motivation"]');
+  motivationSpans.forEach(span => {
+    span.textContent = getQuizAnswer('motivation') || 'Unbekannt';
+  });
   
-  Object.keys(answerMappings).forEach(key => {
-    document.querySelectorAll(`[data-quiz-answer="${key}"]`).forEach(span => {
-      span.textContent = getQuizAnswer(answerMappings[key]) || 'Unbekannt';
-    });
+  // Was am wichtigsten ist
+  const wichtigstesSpans = document.querySelectorAll('[data-quiz-answer="wichtigster_punkt"]');
+  wichtigstesSpans.forEach(span => {
+    span.textContent = getQuizAnswer('wichtigster_punkt') || 'Unbekannt';
+  });
+  
+  // Hundealter
+  const alterSpans = document.querySelectorAll('[data-quiz-answer="alter"]');
+  alterSpans.forEach(span => {
+    span.textContent = getQuizAnswer('alter') || 'Unbekannt';
+  });
+  
+  // Hundegeschlecht
+  const geschlechtSpans = document.querySelectorAll('[data-quiz-answer="geschlecht"]');
+  geschlechtSpans.forEach(span => {
+    span.textContent = getQuizAnswer('geschlecht') || 'Unbekannt';
+  });
+  
+  // Ziehen-Häufigkeit
+  const haeufigkeitSpans = document.querySelectorAll('[data-quiz-answer="haeufigkeit_ziehen"]');
+  haeufigkeitSpans.forEach(span => {
+    span.textContent = getQuizAnswer('haeufigkeit_ziehen') || 'Unbekannt';
+  });
+  
+  // Ziehen-Stärke
+  const staerkeSpans = document.querySelectorAll('[data-quiz-answer="staerke_ziehen"]');
+  staerkeSpans.forEach(span => {
+    span.textContent = getQuizAnswer('staerke_ziehen') || 'Unbekannt';
+  });
+  
+  // Verfügbare Zeit
+  const zeitSpans = document.querySelectorAll('[data-quiz-answer="zeit_verfuegbar"]');
+  zeitSpans.forEach(span => {
+    span.textContent = getQuizAnswer('zeit_verfuegbar') || 'Unbekannt';
+  });
+  
+  // Ziel in 30 Tagen
+  const zielSpans = document.querySelectorAll('[data-quiz-answer="ziel_30_tage"]');
+  zielSpans.forEach(span => {
+    span.textContent = getQuizAnswer('ziel_30_tage') || 'Unbekannt';
+  });
+  
+  // Woher der Hund kommt
+  const woherSpans = document.querySelectorAll('[data-quiz-answer="woher_hund"]');
+  woherSpans.forEach(span => {
+    span.textContent = getQuizAnswer('woher_hund') || 'Unbekannt';
+  });
+  
+  // Seit wann das Problem besteht
+  const seitWannSpans = document.querySelectorAll('[data-quiz-answer="wie_lange_schon"]');
+  seitWannSpans.forEach(span => {
+    span.textContent = getQuizAnswer('wie_lange_schon') || 'Unbekannt';
   });
 };
 
-// Hundegewicht
+// Hundegewicht in Spans anzeigen
 window.showDogWeightInSpans = function() {
   const dogWeight = getDogWeight();
-  document.querySelectorAll('[data-quiz-answer="dog_weight"]').forEach(span => {
+  
+  const weightSpans = document.querySelectorAll('[data-quiz-answer="dog_weight"]');
+  weightSpans.forEach(span => {
     span.textContent = dogWeight || 'Unbekannt';
   });
 };
 
+// Hundegewicht abrufen (mit Fallback)
 window.getDogWeight = function() {
-  if (window.quizData && window.quizData.dog_weight) return window.quizData.dog_weight;
+  // Zuerst aus Make-Daten
+  if (window.quizData && window.quizData.dog_weight) {
+    return window.quizData.dog_weight;
+  }
+  // Fallback auf localStorage
   return localStorage.getItem('dog_weight') || null;
 };
 
+// Ziehgrad in Input-Field schreiben (falls vorhanden)
 window.writeZiehgradToInput = function() {
   const inputField = document.getElementById('input-ziehgrad');
-  if (!inputField) return;
+  
+  // Wenn Input nicht existiert, einfach return (kein Error)
+  if (!inputField) {
+    return;
+  }
+  
   const ziehgradText = getZiehgradText();
-  if (ziehgradText && ziehgradText !== 'Unbekannt') inputField.value = ziehgradText;
+  
+  if (ziehgradText && ziehgradText !== 'Unbekannt') {
+    inputField.value = ziehgradText;
+    console.log('✅ Ziehgrad in Input geschrieben:', ziehgradText);
+  }
 };
 
 
-// Datum-Berechnungen
+
+// Datum-Berechnungen basierend auf AKTUELLEM deutschen Datum
 window.calculateDatesFromQuiz = function() {
   const startDate = new Date();
   
+  // 42 Tage später (für Monat + Jahr)
   const date30DaysLater = new Date(startDate);
   date30DaysLater.setDate(startDate.getDate() + 42);
 
@@ -269,40 +344,62 @@ window.calculateDatesFromQuiz = function() {
     'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
   ];
 
-  const monthYearIn30Days = `${monthNames[date30DaysLater.getMonth()]} ${date30DaysLater.getFullYear()}`;
+  const monthIn30Days = monthNames[date30DaysLater.getMonth()];
+  const yearIn30Days = date30DaysLater.getFullYear();
+  const monthYearIn30Days = `${monthIn30Days} ${yearIn30Days}`;
   
+  // 7 Tage später (für Datum im Format XX.XX.)
   const date7DaysLater = new Date(startDate);
   date7DaysLater.setDate(startDate.getDate() + 7);
   
-  const dateIn7Days = `${String(date7DaysLater.getDate()).padStart(2, '0')}.${String(date7DaysLater.getMonth() + 1).padStart(2, '0')}.`;
+  const day7Later = String(date7DaysLater.getDate()).padStart(2, '0');
+  const month7Later = String(date7DaysLater.getMonth() + 1).padStart(2, '0');
+  const dateIn7Days = `${day7Later}.${month7Later}.`;
   
-  const weekdayNames = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+  // Wochentag in 7 Tagen
+  const weekdayNames = [
+    'Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 
+    'Donnerstag', 'Freitag', 'Samstag'
+  ];
+  
   const weekdayIn7Days = weekdayNames[date7DaysLater.getDay()];
   
-  document.querySelectorAll('[data-date-month-30="true"]').forEach(span => {
+  // In Spans einsetzen
+  const monthSpans = document.querySelectorAll('[data-date-month-30="true"]');
+  monthSpans.forEach(span => {
     span.textContent = monthYearIn30Days;
   });
   
-  document.querySelectorAll('[data-date-7-days="true"]').forEach(span => {
+  const date7Spans = document.querySelectorAll('[data-date-7-days="true"]');
+  date7Spans.forEach(span => {
     span.textContent = dateIn7Days;
   });
   
-  document.querySelectorAll('[data-weekday-7-days="true"]').forEach(span => {
+  const weekday7Spans = document.querySelectorAll('[data-weekday-7-days="true"]');
+  weekday7Spans.forEach(span => {
     span.textContent = weekdayIn7Days;
   });
 };
 
-// Conditional Content
+// Conditional Content basierend auf Quiz-Antworten
 window.showConditionalContent = function() {
-  if (!window.quizData && !localStorage.getItem('dog_weight')) return;
+  if (!window.quizData && !localStorage.getItem('dog_weight')) {
+    return;
+  }
   
-  document.querySelectorAll('[data-answer-content]').forEach(element => {
+  const allContentElements = document.querySelectorAll('[data-answer-content]');
+  
+  allContentElements.forEach(element => {
     const contentRule = element.getAttribute('data-answer-content');
     const [fieldName, expectedAnswer] = contentRule.split(':');
     
-    if (!fieldName || !expectedAnswer) return;
+    if (!fieldName || !expectedAnswer) {
+      return;
+    }
     
     let actualAnswer = null;
+    
+    // Spezialfall für dog_weight (kann auch ohne quizData aus localStorage kommen)
     if (fieldName.trim() === 'dog_weight') {
       actualAnswer = getDogWeight();
     } else {
@@ -339,31 +436,43 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function updateTimerDisplay() {
-    document.querySelectorAll('[data-timer-display="true"]').forEach(span => {
+    const timerSpans = document.querySelectorAll('[data-timer-display="true"]');
+    timerSpans.forEach(span => {
       span.textContent = formatTime(remainingSeconds);
     });
   }
 
   function saveTimerToStorage() {
-    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify({
+    const timerData = {
       startTime: timerStartTime,
       remainingSeconds: remainingSeconds,
       timerStarted: timerStarted,
       lastUpdate: Date.now()
-    }));
+    };
+    localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(timerData));
   }
 
   function loadTimerFromStorage() {
     const stored = localStorage.getItem(TIMER_STORAGE_KEY);
     if (!stored) return null;
-    try { return JSON.parse(stored); } catch (e) { return null; }
+    
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      return null;
+    }
   }
 
   function restoreTimerFromStorage() {
     const timerData = loadTimerFromStorage();
-    if (!timerData || !timerData.timerStarted) return false;
     
-    const elapsedSeconds = Math.floor((Date.now() - timerData.lastUpdate) / 1000);
+    if (!timerData || !timerData.timerStarted) {
+      return false;
+    }
+    
+    const now = Date.now();
+    const elapsedSeconds = Math.floor((now - timerData.lastUpdate) / 1000);
+    
     remainingSeconds = timerData.remainingSeconds - elapsedSeconds;
     
     if (remainingSeconds <= 0) {
@@ -377,35 +486,49 @@ document.addEventListener("DOMContentLoaded", function() {
     timerStartTime = timerData.startTime;
     updateTimerDisplay();
     startTimerCountdown();
+    
     return true;
   }
 
   function handleTimerExpired() {
-    if (timerInterval) clearInterval(timerInterval);
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+    
     localStorage.removeItem(TIMER_STORAGE_KEY);
     timerStarted = false;
+    
     window.location.href = 'https://www.hundetraining.de/ll/lc/authentifizierung?target=video1';
   }
 
   function startTimerCountdown() {
-    if (timerInterval) clearInterval(timerInterval);
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+    
     timerInterval = setInterval(() => {
       remainingSeconds--;
       updateTimerDisplay();
       saveTimerToStorage();
-      if (remainingSeconds <= 0) handleTimerExpired();
+      
+      if (remainingSeconds <= 0) {
+        handleTimerExpired();
+      }
     }, 1000);
   }
 
   function initializeTimer() {
     const startButton = document.getElementById('quiz_btn_step35');
+    
     if (!startButton) return;
     
     startButton.addEventListener('click', function() {
       if (timerStarted) return;
+      
       timerStarted = true;
       timerStartTime = Date.now();
       remainingSeconds = 15 * 60;
+      
       updateTimerDisplay();
       saveTimerToStorage();
       startTimerCountdown();
@@ -413,14 +536,20 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   function initializeAddTimeButtons() {
-    document.querySelectorAll('[data-add-time="true"]').forEach(button => {
+    const addTimeButtons = document.querySelectorAll('[data-add-time="true"]');
+    
+    addTimeButtons.forEach(button => {
       button.addEventListener('click', function() {
         if (!timerStarted) return;
+        
         remainingSeconds += 10 * 60;
         updateTimerDisplay();
         saveTimerToStorage();
-        document.querySelectorAll('[data-add-time="true"]').forEach(btn => {
+        
+        addTimeButtons.forEach(btn => {
           btn.style.display = 'none';
+          btn.style.opacity = '0';
+          btn.style.transition = 'opacity 0.3s ease-out';
         });
       });
     });
@@ -428,25 +557,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function initializeTimerSystem() {
     const restored = restoreTimerFromStorage();
-    if (!restored) updateTimerDisplay();
+    
+    if (!restored) {
+      updateTimerDisplay();
+    }
+    
     initializeTimer();
     initializeAddTimeButtons();
   }
 
-  setTimeout(() => { initializeTimerSystem(); }, 100);
+  setTimeout(() => {
+    initializeTimerSystem();
+  }, 100);
 });
 
 
 // ===== QUIZ DATA MANAGEMENT =====
 document.addEventListener("DOMContentLoaded", function() {
+  let quizData = null;
   
   function getEmailFromURL() {
-    return new URLSearchParams(window.location.search).get('email');
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('email');
   }
   
   function cleanURLFromEmailParam() {
     const url = new URL(window.location);
     const params = new URLSearchParams(url.search);
+    
     if (params.has('email')) {
       params.delete('email');
       url.search = params.toString();
@@ -456,10 +594,14 @@ document.addEventListener("DOMContentLoaded", function() {
   
   function getEmailFromStorage() {
     const urlEmail = getEmailFromURL();
-    if (urlEmail) return urlEmail;
-    return localStorage.getItem('email') || 
-           localStorage.getItem('lc_useremail') || 
-           localStorage.getItem('encryptedEmail');
+    if (urlEmail) {
+      return urlEmail;
+    }
+    
+    const email = localStorage.getItem('email') || 
+                 localStorage.getItem('lc_useremail') || 
+                 localStorage.getItem('encryptedEmail');
+    return email;
   }
   
   function loadLocalDataImmediately() {
@@ -472,56 +614,99 @@ document.addEventListener("DOMContentLoaded", function() {
                           localStorage.getItem('firstName');
     
     if (localDogName) {
-      document.querySelectorAll('[data-dog-name="true"]').forEach(span => {
+      const dogNameSpans = document.querySelectorAll('[data-dog-name="true"]');
+      dogNameSpans.forEach(span => {
         span.textContent = localDogName;
       });
     }
     
     if (localFirstName) {
-      document.querySelectorAll('[data-first-name="true"]').forEach(span => {
+      const firstNameSpans = document.querySelectorAll('[data-first-name="true"]');
+      firstNameSpans.forEach(span => {
         span.textContent = localFirstName;
       });
     }
   }
   
   window.getFirstName = function() {
-    if (window.quizData && window.quizData.first_name) return window.quizData.first_name;
+    if (window.quizData && window.quizData.first_name) {
+      return window.quizData.first_name;
+    }
     return localStorage.getItem('fn') || 
            localStorage.getItem('first_name') || 
            localStorage.getItem('firstName') || 
            'Du';
   };
   
-  async function fetchQuizData(email) {
-    if (!email) return null;
-    try {
-      const response = await fetch('https://hook.eu2.make.com/3m83fp9qnluup12vr8d8donscnuuo4de', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, action: 'get_quiz_data' })
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error('❌ Fetch Fehler:', error);
-      return null;
-    }
+ async function fetchQuizData(email) {
+  if (!email) {
+    console.warn('⚠️ fetchQuizData: Keine Email');
+    return null;
   }
   
-  function makeDataAvailable(data) {
-    window.quizData = data;
-    localStorage.setItem('quizData', JSON.stringify(data));
-    if (data.email) localStorage.setItem('email', data.email);
-    document.dispatchEvent(new CustomEvent('quizDataLoaded', { detail: data }));
+  console.log('🔍 fetchQuizData: Lade Daten für:', email);
+  
+  try {
+    const response = await fetch('https://hook.eu2.make.com/3m83fp9qnluup12vr8d8donscnuuo4de', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: email,
+        action: 'get_quiz_data'
+      })
+    });
+    
+    console.log('📡 Response Status:', response.status);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✅ Daten empfangen:', data);
+    
+    return data;
+  } catch (error) {
+    console.error('❌ Fetch Fehler:', error);
+    return null;
   }
+}
+
+  
+function makeDataAvailable(data) {
+  // In globalem Objekt speichern
+  window.quizData = data;
+  
+  // In localStorage für Persistenz
+  localStorage.setItem('quizData', JSON.stringify(data));
+  
+  // ===== NEU: Email auch einzeln speichern =====
+  if (data.email) {
+    localStorage.setItem('email', data.email);
+    console.log('✅ Email in localStorage gespeichert:', data.email);
+  }
+  
+  // Custom Event für andere Scripts
+  const event = new CustomEvent('quizDataLoaded', { 
+    detail: data 
+  });
+  document.dispatchEvent(event);
+}
+
   
   window.getQuizAnswer = function(questionKey) {
-    if (!window.quizData) return null;
+    if (!window.quizData) {
+      return null;
+    }
     return window.quizData[questionKey] || null;
   };
   
   window.getDogName = function() {
-    if (window.quizData && window.quizData.dog_name) return window.quizData.dog_name;
+    if (window.quizData && window.quizData.dog_name) {
+      return window.quizData.dog_name;
+    }
     return localStorage.getItem('dogName') || localStorage.getItem('dog_name') || 'Dein Hund';
   };
   
@@ -541,16 +726,19 @@ document.addEventListener("DOMContentLoaded", function() {
       return staerke === 'So stark dass ich die Balance verliere' || 
              staerke === 'Mein Arm tut danach weh';
     },
+    
     istHaeufigerZieher: () => {
       const haeufigkeit = getQuizAnswer('haeufigkeit_ziehen');
       return haeufigkeit === 'Bei jedem Spaziergang' || 
              haeufigkeit === 'Mehrmals pro Woche';
     },
+    
     istSehrMotiviert: () => {
       const motivation = getQuizAnswer('motivation');
       return motivation === 'Extrem motiviert' || 
              motivation === 'Sehr motiviert';
     },
+    
     hatVielZeit: () => {
       const zeit = getQuizAnswer('zeit_verfuegbar');
       return zeit === '15-20 Minuten' || zeit === 'Unterschiedlich';
@@ -558,7 +746,9 @@ document.addEventListener("DOMContentLoaded", function() {
   };
   
   window.calculateUserProfile = function() {
-    if (!window.quizData) return null;
+    if (!window.quizData) {
+      return null;
+    }
     
     const profile = {
       problemLevel: 'niedrig',
@@ -618,68 +808,133 @@ document.addEventListener("DOMContentLoaded", function() {
   };
   
   function updateAllDynamicContent() {
-    document.querySelectorAll('[data-dog-name="true"]').forEach(span => {
+    const dogNameSpans = document.querySelectorAll('[data-dog-name="true"]');
+    dogNameSpans.forEach(span => {
       span.textContent = getDogName();
     });
-    document.querySelectorAll('[data-first-name="true"]').forEach(span => {
+    
+    const firstNameSpans = document.querySelectorAll('[data-first-name="true"]');
+    firstNameSpans.forEach(span => {
       span.textContent = getFirstName();
     });
   }
   
-  async function initializeQuizData() {
-    const email = getEmailFromStorage();
-    if (getEmailFromURL()) cleanURLFromEmailParam();
+  window.showQuizData = function() {
+    console.log("Aktuelle Quiz-Daten:", window.quizData);
+    console.log("Email aus URL:", getEmailFromURL());
+    console.log("localStorage Email:", localStorage.getItem('email'));
+    console.log("localStorage Hundename:", localStorage.getItem('dogName'));
+    console.log("localStorage Vorname:", localStorage.getItem('first_name'));
+  };
+  
+  window.testQuizDataSystem = function() {
+    console.log("=== QUIZ DATA SYSTEM TEST ===");
+    console.log("Email aus URL:", getEmailFromURL());
+    console.log("Email im localStorage:", localStorage.getItem('email'));
+    console.log("Verwendete Email:", getEmailFromStorage());
+    console.log("Quiz-Daten von Make geladen:", !!window.quizData);
+    console.log("Aktueller Hundename:", getDogName());
+    console.log("Aktueller Vorname:", getFirstName());
     
-    if (email) {
-      const data = await fetchQuizData(email);
-      if (data) makeDataAvailable(data);
+    if (window.quizData) {
+      console.log("Alle Make Quiz-Daten:", window.quizData);
+    } else {
+      console.log("Noch keine Make-Daten - verwende localStorage");
     }
+  };
+  
+async function initializeQuizData() {
+  const email = getEmailFromStorage();
+  
+  console.log('🚀 initializeQuizData: Start mit Email:', email);
+  
+  if (getEmailFromURL()) {
+    console.log('🔄 Bereinige Email aus URL');
+    cleanURLFromEmailParam();
   }
   
-  // quizDataLoaded Event Handler
-  document.addEventListener('quizDataLoaded', function(event) {
+  if (email) {
+    console.log('📞 Rufe fetchQuizData auf für:', email);
+    const data = await fetchQuizData(email);
+    console.log('📦 Erhaltene Daten:', data);
+    
+    if (data) {
+      console.log('✅ Mache Daten verfügbar');
+      makeDataAvailable(data);
+    } else {
+      console.warn('⚠️ Keine Daten erhalten von Make');
+    }
+  } else {
+    console.warn('⚠️ Keine Email gefunden (weder URL noch localStorage)');
+  }
+}
+
+  
+document.addEventListener('quizDataLoaded', function(event) {
+    const quizData = event.detail;
+    
     updateAllDynamicContent();
     
     const userProfile = calculateUserProfile();
     showContentBasedOnProfile(userProfile);
     window.userProfile = userProfile;
     
+    // Ziehgrad berechnen
     const ziehgradResult = calculateZiehgrad();
     if (ziehgradResult) {
       window.ziehgradResult = ziehgradResult;
       setTimeout(() => {
         showZiehgradContent();
-        writeZiehgradToInput();
+        writeZiehgradToInput(); // NEU: Ziehgrad in Input schreiben
       }, 100);
     }
     
-    setTimeout(() => { showQuizAnswersInSpans(); }, 200);
-    setTimeout(() => { showDogWeightInSpans(); }, 250);
-    setTimeout(() => { calculateDatesFromQuiz(); }, 300);
-    setTimeout(() => { showConditionalContent(); }, 400);
+    // Quiz-Antworten in Spans laden
+    setTimeout(() => {
+      showQuizAnswersInSpans();
+    }, 200);
+
+    // Hundegewicht in Spans laden
+    setTimeout(() => {
+      showDogWeightInSpans();
+    }, 250);
+    
+    // Datum-Berechnungen
+    setTimeout(() => {
+      calculateDatesFromQuiz();
+    }, 300);
+    
+    // Conditional Content anzeigen
+    setTimeout(() => {
+      showConditionalContent();
+    }, 400);
   });
 
-  // Sofort laden was aus localStorage geht
-  loadLocalDataImmediately();
   
-  setTimeout(() => {
-    showDogWeightInSpans();
-    showConditionalContent();
-  }, 100);
+// Hundegewicht auch sofort laden (falls schon im localStorage)
+setTimeout(() => {
+  showDogWeightInSpans();
+  showConditionalContent(); // Auch Conditional Content initial prüfen
+}, 100);
 
-  // Quiz-Daten von Make laden
-  setTimeout(async () => {
-    await initializeQuizData();
-  }, 500);
+// ===== WICHTIG: initializeQuizData AUFRUFEN =====
+setTimeout(async () => {
+  console.log('🚀 Starte initializeQuizData');
+  await initializeQuizData();
+  console.log('✅ initializeQuizData abgeschlossen');
+}, 500);
 
 });  // <- Schließt DOMContentLoaded
 
-
 // Hilfsfunktionen für Element-Management
 function showElements(selector) {
-  document.querySelectorAll(selector).forEach(el => { el.style.display = 'block'; });
+  document.querySelectorAll(selector).forEach(el => {
+    el.style.display = 'block';
+  });
 }
 
 function hideElements(selector) {
-  document.querySelectorAll(selector).forEach(el => { el.style.display = 'none'; });
+  document.querySelectorAll(selector).forEach(el => {
+    el.style.display = 'none';
+  });
 }
