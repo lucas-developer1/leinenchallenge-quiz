@@ -355,6 +355,14 @@ window.calculateDatesFromQuiz = function() {
   const day7Later = String(date7DaysLater.getDate()).padStart(2, '0');
   const month7Later = String(date7DaysLater.getMonth() + 1).padStart(2, '0');
   const dateIn7Days = `${day7Later}.${month7Later}.`;
+
+const date8days = document.querySelectorAll('[data-date-8days]');
+date8days.forEach(el => {
+  const d = new Date();
+  d.setDate(d.getDate() + 8);
+  el.textContent = d.getDate().toString().padStart(2, '0') + '.' + (d.getMonth() + 1).toString().padStart(2, '0');
+});
+
   
   // Wochentag in 7 Tagen
   const weekdayNames = [
