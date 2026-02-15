@@ -4,6 +4,23 @@
  * Ziehgrad-Berechnung, Quiz-Daten, Timer System
  */
 
+// Simple Spinner Advance Logic (IIFE)
+(function() {
+  // Reload-Check: Nicht auto-advancen wenn Seite neu geladen wurde
+  var isReload = false;
+  try {
+    var navEntry = performance.getEntriesByType('navigation')[0];
+    isReload = navEntry && navEntry.type === 'reload';
+  } catch(e) {
+    isReload = performance.navigation && performance.navigation.type === 1;
+  }
+
+  if (isReload) {
+    console.log('🔄 Reload erkannt – Spinner Auto-Advance übersprungen');
+    return;
+  }
+
+
 // ===== SIMPLE SPINNER ADVANCE LOGIK (ersetzt alten 3-Schritt-Spinner) =====
 (function() {
   var advanced = false;
