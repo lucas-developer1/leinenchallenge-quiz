@@ -146,25 +146,34 @@ planCheckboxes.forEach(function(label) {
   if (!input) return;
 
   input.addEventListener('change', function() {
-    // Letzte aktive Checkbox darf nicht abgewählt werden
-    if (!input.checked) {
-      var anyChecked = false;
-      planCheckboxes.forEach(function(otherLabel) {
-        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-        if (otherInput && otherInput.checked) anyChecked = true;
-      });
 
-      if (!anyChecked) {
-        input.checked = true;
-        console.log('🔒 Mindestens eine Option muss gewählt sein');
-        return;
-      }
+// Letzte aktive Checkbox darf nicht abgewählt werden
+if (!input.checked) {
+  var anyChecked = false;
+  planCheckboxes.forEach(function(otherLabel) {
+    var otherInput = otherLabel.querySelector('input[type="checkbox"]');
+    if (otherInput && otherInput.checked) anyChecked = true;
+  });
 
-      if (selectedPlan === label.getAttribute('data-checkout-plan')) {
-        selectedPlan = null;
-      }
-      return;
+  if (!anyChecked) {
+    // Input zurücksetzen
+    input.checked = true;
+    
+    // Webflow Custom Checkbox visuell wiederherstellen
+    var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
+    if (customCheck) {
+      customCheck.classList.add('w--redirected-checked');
     }
+    
+    console.log('🔒 Mindestens eine Option muss gewählt sein');
+    return;
+  }
+
+  if (selectedPlan === label.getAttribute('data-checkout-plan')) {
+    selectedPlan = null;
+  }
+  return;
+}
 
     // Radio-Verhalten: Alle anderen unchecken
     planCheckboxes.forEach(function(otherLabel) {
