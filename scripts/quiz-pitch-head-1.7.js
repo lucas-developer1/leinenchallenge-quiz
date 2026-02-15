@@ -139,74 +139,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
   var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
-  var debounceTimer = null;
-  var locked = false;
+  var isProcessing = false;
 
-  function processCheckboxState() {
-    if (locked) return;
+  planCheckboxes.forEach(function(label) {
+    var input = label.querySelector('input[type="checkbox"]');
+    if (!input) return;
 
-    var checkedLabels = [];
+    input.addEventListener('change', function() {
+      if (isProcessing) return;
 
-    planCheckboxes.forEach(function(label) {
-      var cc = label.querySelector('.w-checkbox-input--inputType-custom');
-      if (cc && cc.classList.contains('w--redirected-checked')) {
-        checkedLabels.push(label);
+      if (!input.checked) {
+        // Prüfe über WEBFLOW KLASSE statt input.checked
+        var anyChecked = false;
+        planCheckboxes.forEach(function(otherLabel) {
+          var otherCC = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
+          if (otherCC && otherLabel !== label && otherCC.classList.contains('w--redirected-checked')) {
+            anyChecked = true;
+          }
+        });
+
+        if (!anyChecked) {
+          isProcessing = true;
+          setTimeout(function() {
+            input.checked = true;
+            var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
+            if (customCheck) customCheck.classList.add('w--redirected-checked');
+            isProcessing = false;
+            console.log('🔒 Mindestens eine Option muss gewählt sein');
+          }, 0);
+          return;
+        }
+
+        if (selectedPlan === label.getAttribute('data-checkout-plan')) {
+          selectedPlan = null;
+        }
+        return;
       }
-    });
 
-    // Mehrere gecheckt → Radio: nur die letzte behalten
-    if (checkedLabels.length > 1) {
-      locked = true;
-      var keep = checkedLabels[checkedLabels.length - 1];
-      checkedLabels.forEach(function(label) {
-        if (label === keep) return;
-        var cc = label.querySelector('.w-checkbox-input--inputType-custom');
-        var input = label.querySelector('input[type="checkbox"]');
-        if (cc) cc.classList.remove('w--redirected-checked');
-        if (input) input.checked = false;
-      });
-      selectedPlan = keep.getAttribute('data-checkout-plan');
-      console.log('✅ Plan gewählt:', selectedPlan);
-      setTimeout(function() { locked = false; }, 300);
-      return;
-    }
-
-    // Genau eine gecheckt → Plan merken
-    if (checkedLabels.length === 1) {
-      selectedPlan = checkedLabels[0].getAttribute('data-checkout-plan');
-      console.log('✅ Plan gewählt:', selectedPlan);
-      return;
-    }
-
-    // Keine gecheckt → letzte wiederherstellen
-    if (checkedLabels.length === 0 && selectedPlan) {
-      locked = true;
-      planCheckboxes.forEach(function(label) {
-        if (label.getAttribute('data-checkout-plan') === selectedPlan) {
-          var cc = label.querySelector('.w-checkbox-input--inputType-custom');
-          var input = label.querySelector('input[type="checkbox"]');
-          if (cc) cc.classList.add('w--redirected-checked');
-          if (input) input.checked = true;
-          console.log('🔒 Mindestens eine Option muss gewählt sein');
+      // ANWÄHLEN: Radio-Verhalten
+      planCheckboxes.forEach(function(otherLabel) {
+        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
+        if (otherInput && otherInput !== input) {
+          otherInput.checked = false;
+          var customCheck = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
+          if (customCheck) {
+            customCheck.classList.remove('w--redirected-checked');
+          }
         }
       });
-      setTimeout(function() { locked = false; }, 300);
-    }
-  }
 
-  // MutationObserver auf jeder Checkbox
-  planCheckboxes.forEach(function(label) {
-    var cc = label.querySelector('.w-checkbox-input--inputType-custom');
-    if (!cc) return;
-
-    new MutationObserver(function() {
-      if (locked) return;
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(processCheckboxState, 60);
-    }).observe(cc, { attributes: true, attributeFilter: ['class'] });
+      selectedPlan = label.getAttribute('data-checkout-plan');
+      console.log('✅ Plan gewählt:', selectedPlan);
+    });
   });
 
-  // Initial: selectedPlan aus vorausgewählter Checkbox setzen
+  // Initial: über Webflow-Klasse statt input.checked
   planCheckboxes.forEach(function(label) {
     var cc = label.querySelector('.w-checkbox-input--inputType-custom');
     if (cc && cc.classList.contains('w--redirected-checked')) {
