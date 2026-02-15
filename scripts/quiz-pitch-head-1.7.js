@@ -137,16 +137,16 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = redirectURL;
   }
 
- // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
+// ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
   var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
 
   planCheckboxes.forEach(function(label) {
     var input = label.querySelector('input[type="checkbox"]');
     if (!input) return;
 
-    // Klick abfangen BEVOR die Checkbox sich ändert
-    input.addEventListener('click', function(e) {
-      // Wenn gerade gecheckt und abgewählt werden soll → prüfen
+    // Klick auf Label abfangen
+    label.addEventListener('click', function(e) {
+      // Nur blockieren wenn: diese Checkbox IST gecheckt UND keine andere ist gecheckt
       if (input.checked) {
         var anyOtherChecked = false;
         planCheckboxes.forEach(function(otherLabel) {
@@ -156,11 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!anyOtherChecked) {
           e.preventDefault();
+          e.stopPropagation();
           console.log('🔒 Mindestens eine Option muss gewählt sein');
           return;
         }
       }
-    });
+    }, true);  // capture phase – vor Webflow
 
     // Change für Radio-Verhalten + Plan setzen
     input.addEventListener('change', function() {
