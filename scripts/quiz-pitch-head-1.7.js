@@ -148,52 +148,49 @@ document.addEventListener('DOMContentLoaded', function() {
     input.addEventListener('change', function() {
       if (isProcessing) return;
 
-      if (!input.checked) {
-        // Prüfe über WEBFLOW KLASSE statt input.checked
-        var anyChecked = false;
-        planCheckboxes.forEach(function(otherLabel) {
-          var otherCC = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
-          if (otherCC && otherLabel !== label && otherCC.classList.contains('w--redirected-checked')) {
-            anyChecked = true;
-          }
-        });
+      // Warten bis Webflow Klassen fertig aktualisiert hat
+      setTimeout(function() {
+        var myCC = label.querySelector('.w-checkbox-input--inputType-custom');
+        var myChecked = myCC && myCC.classList.contains('w--redirected-checked');
 
-        if (!anyChecked) {
+        if (myChecked) {
+          // ANGEWÄHLT → Radio: alle anderen unchecken
           isProcessing = true;
-          setTimeout(function() {
+          planCheckboxes.forEach(function(otherLabel) {
+            if (otherLabel === label) return;
+            var otherCC = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
+            var otherInput = otherLabel.querySelector('input[type="checkbox"]');
+            if (otherCC && otherCC.classList.contains('w--redirected-checked')) {
+              otherCC.classList.remove('w--redirected-checked');
+              if (otherInput) otherInput.checked = false;
+            }
+          });
+          selectedPlan = label.getAttribute('data-checkout-plan');
+          console.log('✅ Plan gewählt:', selectedPlan);
+          setTimeout(function() { isProcessing = false; }, 100);
+
+        } else {
+          // ABGEWÄHLT → prüfe ob noch eine andere aktiv
+          var anyChecked = false;
+          planCheckboxes.forEach(function(otherLabel) {
+            if (otherLabel === label) return;
+            var otherCC = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
+            if (otherCC && otherCC.classList.contains('w--redirected-checked')) anyChecked = true;
+          });
+
+          if (!anyChecked) {
+            isProcessing = true;
+            if (myCC) myCC.classList.add('w--redirected-checked');
             input.checked = true;
-            var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
-            if (customCheck) customCheck.classList.add('w--redirected-checked');
-            isProcessing = false;
             console.log('🔒 Mindestens eine Option muss gewählt sein');
-          }, 0);
-          return;
-        }
-
-        if (selectedPlan === label.getAttribute('data-checkout-plan')) {
-          selectedPlan = null;
-        }
-        return;
-      }
-
-      // ANWÄHLEN: Radio-Verhalten
-      planCheckboxes.forEach(function(otherLabel) {
-        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-        if (otherInput && otherInput !== input) {
-          otherInput.checked = false;
-          var customCheck = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
-          if (customCheck) {
-            customCheck.classList.remove('w--redirected-checked');
+            setTimeout(function() { isProcessing = false; }, 100);
           }
         }
-      });
-
-      selectedPlan = label.getAttribute('data-checkout-plan');
-      console.log('✅ Plan gewählt:', selectedPlan);
+      }, 50);
     });
   });
 
-  // Initial: über Webflow-Klasse statt input.checked
+  // Initial: über Webflow-Klasse
   planCheckboxes.forEach(function(label) {
     var cc = label.querySelector('.w-checkbox-input--inputType-custom');
     if (cc && cc.classList.contains('w--redirected-checked')) {
