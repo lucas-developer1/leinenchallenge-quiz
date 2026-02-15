@@ -137,44 +137,41 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = redirectURL;
   }
 
-  // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
+ // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
   var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
-  var isProcessing = false;
 
   planCheckboxes.forEach(function(label) {
     var input = label.querySelector('input[type="checkbox"]');
     if (!input) return;
 
-    input.addEventListener('change', function() {
-      if (isProcessing) return;
-
-      // ABWÄHLEN: Prüfen ob noch eine andere aktiv ist
-      if (!input.checked) {
-        var anyChecked = false;
+    // Klick abfangen BEVOR die Checkbox sich ändert
+    input.addEventListener('click', function(e) {
+      // Wenn gerade gecheckt und abgewählt werden soll → prüfen
+      if (input.checked) {
+        var anyOtherChecked = false;
         planCheckboxes.forEach(function(otherLabel) {
           var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-          if (otherInput && otherInput.checked) anyChecked = true;
+          if (otherInput && otherInput !== input && otherInput.checked) anyOtherChecked = true;
         });
 
-        if (!anyChecked) {
-          isProcessing = true;
-          setTimeout(function() {
-            input.checked = true;
-            var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
-            if (customCheck) customCheck.classList.add('w--redirected-checked');
-            isProcessing = false;
-            console.log('🔒 Mindestens eine Option muss gewählt sein');
-          }, 0);
+        if (!anyOtherChecked) {
+          e.preventDefault();
+          console.log('🔒 Mindestens eine Option muss gewählt sein');
           return;
         }
+      }
+    });
 
+    // Change für Radio-Verhalten + Plan setzen
+    input.addEventListener('change', function() {
+      if (!input.checked) {
         if (selectedPlan === label.getAttribute('data-checkout-plan')) {
           selectedPlan = null;
         }
         return;
       }
 
-      // ANWÄHLEN: Radio-Verhalten, alle anderen unchecken
+      // Alle anderen unchecken
       planCheckboxes.forEach(function(otherLabel) {
         var otherInput = otherLabel.querySelector('input[type="checkbox"]');
         if (otherInput && otherInput !== input) {
