@@ -2,17 +2,6 @@
  * Leinenchallenge Quiz Pitch - Head Script v1.7
  * GEÄNDERT: A/B-Test entfernt, Zahlungsplan wird per Checkbox gewählt
  * Checkout Preloading, Redirect, Webhook, Button Loader
- *
- * CHECKBOX SETUP IN WEBFLOW:
- * Jede Checkbox bekommt auf dem LABEL (w-checkbox):
- *   data-checkout-plan="PLAN_ID"
- *
- * Beispiel:
- *   Checkbox 1€  → data-checkout-plan="1338353"
- *   Checkbox 7€  → data-checkout-plan="1371536"
- *
- * Optional: data-checkout-group="pricing" auf jeder Checkbox
- *           (damit nur eine gleichzeitig aktiv sein kann)
  */
 
 document.addEventListener('DOMContentLoaded', function() {
