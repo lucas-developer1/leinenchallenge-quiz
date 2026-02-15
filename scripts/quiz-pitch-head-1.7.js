@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let url = `${baseURL}?`;
     
-    // Plan nur anhängen wenn einer gewählt wurde
     if (planId) {
       url += `plan=${planId}&`;
     }
@@ -138,60 +137,69 @@ document.addEventListener('DOMContentLoaded', function() {
     window.location.href = redirectURL;
   }
 
-// ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
-var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
-var isProcessing = false;
+  // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
+  var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
+  var isProcessing = false;
 
-planCheckboxes.forEach(function(label) {
-  var input = label.querySelector('input[type="checkbox"]');
-  if (!input) return;
+  planCheckboxes.forEach(function(label) {
+    var input = label.querySelector('input[type="checkbox"]');
+    if (!input) return;
 
-  input.addEventListener('change', function() {
-    if (isProcessing) return;
+    input.addEventListener('change', function() {
+      if (isProcessing) return;
 
-    // ABWÄHLEN: Prüfen ob noch eine andere aktiv ist
-    if (!input.checked) {
-      var anyChecked = false;
-      planCheckboxes.forEach(function(otherLabel) {
-        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-        if (otherInput && otherInput.checked) anyChecked = true;
-      });
+      // ABWÄHLEN: Prüfen ob noch eine andere aktiv ist
+      if (!input.checked) {
+        var anyChecked = false;
+        planCheckboxes.forEach(function(otherLabel) {
+          var otherInput = otherLabel.querySelector('input[type="checkbox"]');
+          if (otherInput && otherInput.checked) anyChecked = true;
+        });
 
-      if (!anyChecked) {
-        // Warten bis Webflow fertig ist, dann zurücksetzen
-        isProcessing = true;
-        setTimeout(function() {
-          input.checked = true;
-          var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
-          if (customCheck) customCheck.classList.add('w--redirected-checked');
-          isProcessing = false;
-          console.log('🔒 Mindestens eine Option muss gewählt sein');
-        }, 0);
+        if (!anyChecked) {
+          isProcessing = true;
+          setTimeout(function() {
+            input.checked = true;
+            var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
+            if (customCheck) customCheck.classList.add('w--redirected-checked');
+            isProcessing = false;
+            console.log('🔒 Mindestens eine Option muss gewählt sein');
+          }, 0);
+          return;
+        }
+
+        if (selectedPlan === label.getAttribute('data-checkout-plan')) {
+          selectedPlan = null;
+        }
         return;
       }
 
-      if (selectedPlan === label.getAttribute('data-checkout-plan')) {
-        selectedPlan = null;
-      }
-      return;
-    }
-
-    // ANWÄHLEN: Radio-Verhalten, alle anderen unchecken
-    planCheckboxes.forEach(function(otherLabel) {
-      var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-      if (otherInput && otherInput !== input) {
-        otherInput.checked = false;
-        var customCheck = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
-        if (customCheck) {
-          customCheck.classList.remove('w--redirected-checked');
+      // ANWÄHLEN: Radio-Verhalten, alle anderen unchecken
+      planCheckboxes.forEach(function(otherLabel) {
+        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
+        if (otherInput && otherInput !== input) {
+          otherInput.checked = false;
+          var customCheck = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
+          if (customCheck) {
+            customCheck.classList.remove('w--redirected-checked');
+          }
         }
-      }
-    });
+      });
 
-    selectedPlan = label.getAttribute('data-checkout-plan');
-    console.log('✅ Plan gewählt:', selectedPlan);
+      selectedPlan = label.getAttribute('data-checkout-plan');
+      console.log('✅ Plan gewählt:', selectedPlan);
+    });
   });
-});
+
+  // Initial: selectedPlan aus vorausgewählter Checkbox setzen
+  planCheckboxes.forEach(function(label) {
+    var input = label.querySelector('input[type="checkbox"]');
+    if (input && input.checked) {
+      selectedPlan = label.getAttribute('data-checkout-plan');
+      console.log('🔄 Initial Plan gesetzt:', selectedPlan);
+    }
+  });
+
   // ===== PRELOAD TRIGGER =====
   const preloadButton = document.getElementById('quiz_btn_step34');
   if (preloadButton) {
