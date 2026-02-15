@@ -139,65 +139,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
   var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
+  var isUpdating = false;
 
   planCheckboxes.forEach(function(label) {
+    var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
     var input = label.querySelector('input[type="checkbox"]');
-    if (!input) return;
+    if (!customCheck || !input) return;
 
-    // Klick auf Label abfangen
-    label.addEventListener('click', function(e) {
-      // Nur blockieren wenn: diese Checkbox IST gecheckt UND keine andere ist gecheckt
-      if (input.checked) {
-        var anyOtherChecked = false;
+    new MutationObserver(function() {
+      if (isUpdating) return;
+      isUpdating = true;
+
+      var isChecked = customCheck.classList.contains('w--redirected-checked');
+
+      if (isChecked) {
+        // Gerade angeklickt → alle anderen unchecken (Radio-Verhalten)
         planCheckboxes.forEach(function(otherLabel) {
+          if (otherLabel === label) return;
+          var otherCC = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
           var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-          if (otherInput && otherInput !== input && otherInput.checked) anyOtherChecked = true;
+          if (otherCC && otherCC.classList.contains('w--redirected-checked')) {
+            otherCC.classList.remove('w--redirected-checked');
+            if (otherInput) otherInput.checked = false;
+          }
+        });
+        selectedPlan = label.getAttribute('data-checkout-plan');
+        console.log('✅ Plan gewählt:', selectedPlan);
+      } else {
+        // Gerade abgewählt → prüfen ob noch eine andere aktiv ist
+        var anyChecked = false;
+        planCheckboxes.forEach(function(otherLabel) {
+          var otherCC = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
+          if (otherCC && otherCC.classList.contains('w--redirected-checked')) anyChecked = true;
         });
 
-        if (!anyOtherChecked) {
-          e.preventDefault();
-          e.stopPropagation();
+        if (!anyChecked) {
+          // Zurücksetzen – letzte darf nicht abgewählt werden
+          customCheck.classList.add('w--redirected-checked');
+          input.checked = true;
           console.log('🔒 Mindestens eine Option muss gewählt sein');
-          return;
         }
       }
-    }, true);  // capture phase – vor Webflow
 
-    // Change für Radio-Verhalten + Plan setzen
-    input.addEventListener('change', function() {
-      if (!input.checked) {
-        if (selectedPlan === label.getAttribute('data-checkout-plan')) {
-          selectedPlan = null;
-        }
-        return;
-      }
-
-      // Alle anderen unchecken
-      planCheckboxes.forEach(function(otherLabel) {
-        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-        if (otherInput && otherInput !== input) {
-          otherInput.checked = false;
-          var customCheck = otherLabel.querySelector('.w-checkbox-input--inputType-custom');
-          if (customCheck) {
-            customCheck.classList.remove('w--redirected-checked');
-          }
-        }
-      });
-
-      selectedPlan = label.getAttribute('data-checkout-plan');
-      console.log('✅ Plan gewählt:', selectedPlan);
-    });
+      requestAnimationFrame(function() { isUpdating = false; });
+    }).observe(customCheck, { attributes: true, attributeFilter: ['class'] });
   });
 
   // Initial: selectedPlan aus vorausgewählter Checkbox setzen
   planCheckboxes.forEach(function(label) {
-    var input = label.querySelector('input[type="checkbox"]');
-    if (input && input.checked) {
+    var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
+    if (customCheck && customCheck.classList.contains('w--redirected-checked')) {
       selectedPlan = label.getAttribute('data-checkout-plan');
       console.log('🔄 Initial Plan gesetzt:', selectedPlan);
     }
   });
-
   // ===== PRELOAD TRIGGER =====
   const preloadButton = document.getElementById('quiz_btn_step34');
   if (preloadButton) {
