@@ -140,42 +140,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== CHECKBOX PLAN-AUSWAHL (nur Auswahl, kein Redirect) =====
 var planCheckboxes = document.querySelectorAll('[data-checkout-plan]');
+var isProcessing = false;
 
 planCheckboxes.forEach(function(label) {
   var input = label.querySelector('input[type="checkbox"]');
   if (!input) return;
 
   input.addEventListener('change', function() {
+    if (isProcessing) return;
 
-// Letzte aktive Checkbox darf nicht abgewählt werden
-if (!input.checked) {
-  var anyChecked = false;
-  planCheckboxes.forEach(function(otherLabel) {
-    var otherInput = otherLabel.querySelector('input[type="checkbox"]');
-    if (otherInput && otherInput.checked) anyChecked = true;
-  });
+    // ABWÄHLEN: Prüfen ob noch eine andere aktiv ist
+    if (!input.checked) {
+      var anyChecked = false;
+      planCheckboxes.forEach(function(otherLabel) {
+        var otherInput = otherLabel.querySelector('input[type="checkbox"]');
+        if (otherInput && otherInput.checked) anyChecked = true;
+      });
 
-  if (!anyChecked) {
-    // Input zurücksetzen
-    input.checked = true;
-    
-    // Webflow Custom Checkbox visuell wiederherstellen
-    var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
-    if (customCheck) {
-      customCheck.classList.add('w--redirected-checked');
+      if (!anyChecked) {
+        // Warten bis Webflow fertig ist, dann zurücksetzen
+        isProcessing = true;
+        setTimeout(function() {
+          input.checked = true;
+          var customCheck = label.querySelector('.w-checkbox-input--inputType-custom');
+          if (customCheck) customCheck.classList.add('w--redirected-checked');
+          isProcessing = false;
+          console.log('🔒 Mindestens eine Option muss gewählt sein');
+        }, 0);
+        return;
+      }
+
+      if (selectedPlan === label.getAttribute('data-checkout-plan')) {
+        selectedPlan = null;
+      }
+      return;
     }
-    
-    console.log('🔒 Mindestens eine Option muss gewählt sein');
-    return;
-  }
 
-  if (selectedPlan === label.getAttribute('data-checkout-plan')) {
-    selectedPlan = null;
-  }
-  return;
-}
-
-    // Radio-Verhalten: Alle anderen unchecken
+    // ANWÄHLEN: Radio-Verhalten, alle anderen unchecken
     planCheckboxes.forEach(function(otherLabel) {
       var otherInput = otherLabel.querySelector('input[type="checkbox"]');
       if (otherInput && otherInput !== input) {
@@ -187,12 +188,10 @@ if (!input.checked) {
       }
     });
 
-    // Plan merken
     selectedPlan = label.getAttribute('data-checkout-plan');
     console.log('✅ Plan gewählt:', selectedPlan);
   });
 });
-
   // ===== PRELOAD TRIGGER =====
   const preloadButton = document.getElementById('quiz_btn_step34');
   if (preloadButton) {
