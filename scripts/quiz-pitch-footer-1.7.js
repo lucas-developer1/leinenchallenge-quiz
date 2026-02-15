@@ -6,7 +6,7 @@
 
 // Simple Spinner Advance Logic (IIFE)
 (function() {
-  // Reload-Check: Nicht auto-advancen wenn Seite neu geladen wurde
+  // Reload-Check
   var isReload = false;
   try {
     var navEntry = performance.getEntriesByType('navigation')[0];
@@ -20,19 +20,15 @@
     return;
   }
 
-
-// ===== SIMPLE SPINNER ADVANCE LOGIK (ersetzt alten 3-Schritt-Spinner) =====
-(function() {
   var advanced = false;
-  var minDisplayTime = 1500;  // Min. 1.5s Spinner anzeigen
-  var maxWaitTime = 8000;     // Max. 8s warten
+  var minDisplayTime = 1500;
+  var maxWaitTime = 8000;
   var startTime = Date.now();
 
   function advanceToNextStep() {
     if (advanced) return;
     advanced = true;
 
-    // Next-Button in Step 1 finden und klicken
     var step1 = document.querySelector('[data-form-step="1"]');
     if (step1) {
       var btn = step1.querySelector('[data-next-button]');
@@ -42,7 +38,6 @@
       }
     }
 
-    // Fallback: Erster sichtbarer Step
     var steps = document.querySelectorAll('[data-form-step]');
     for (var i = 0; i < steps.length; i++) {
       var step = steps[i];
@@ -67,10 +62,8 @@
     }
   }
 
-  // Weiter wenn Make-Daten geladen
   document.addEventListener('quizDataLoaded', tryAdvance);
 
-  // Safety Timeout
   setTimeout(function() {
     if (!advanced) {
       advanceToNextStep();
