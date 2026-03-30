@@ -938,10 +938,29 @@ document.addEventListener('DOMContentLoaded', function () {
         emailInput.value = email;
       }
 
-      // Live-Sync: Wenn Name geändert → Avatar aktualisieren
+      // Display-Felder im Lastname-Step vorausfüllen
+      var firstNameDisplay = document.getElementById('input-firstname-display' + suffix);
+      var emailDisplay     = document.getElementById('input-email-display' + suffix);
+
+      if (firstNameDisplay && !firstNameDisplay.textContent.trim() && firstName) {
+        firstNameDisplay.textContent = firstName;
+      }
+      if (emailDisplay && !emailDisplay.textContent.trim() && email) {
+        emailDisplay.textContent = email;
+      }
+
+      // Live-Sync: Wenn Name in Step 1 geändert → Display + Avatar aktualisieren
       if (nameInput) {
         nameInput.addEventListener('input', function () {
           updateAvatarName(nameInput.value.trim(), suffix);
+          if (firstNameDisplay) firstNameDisplay.textContent = nameInput.value.trim();
+        });
+      }
+
+      // Live-Sync: Wenn Email in Step 1 geändert → Email-Display aktualisieren
+      if (emailInput) {
+        emailInput.addEventListener('input', function () {
+          if (emailDisplay) emailDisplay.textContent = emailInput.value.trim();
         });
       }
     });
