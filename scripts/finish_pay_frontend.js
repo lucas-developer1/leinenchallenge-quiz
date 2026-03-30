@@ -264,8 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
     init();
   }
 }();
-</script>
-<script>
+
 !function(){
   // ── CONFIGURATION ─────────────────────────────────────────────
   var FP_CONFIG = {
