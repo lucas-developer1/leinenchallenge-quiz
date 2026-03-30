@@ -911,6 +911,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+
+
+
                                                       
 // ============================================================
 // FINISH PAY EXTENSIONS
@@ -982,11 +986,31 @@ document.addEventListener('DOMContentLoaded', function () {
       var input    = document.getElementById('input-lastname' + suffix);
       var nextBtn  = document.getElementById('next-button-step-lastname' + suffix);
       var backBtn  = document.getElementById('back-step-lastname' + suffix);
+      var closeBtn = document.getElementById('close-step-lastname' + suffix);
       var errorEl  = document.getElementById('input-lastname-error' + suffix);
 
       if (!step || !nextBtn) return;
 
-      // Weiter-Button → validieren → Karten-Step öffnen
+      // ── Close-Button ─────────────────────────────────────
+      if (closeBtn) {
+        var newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+        newCloseBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          step.classList.remove('is-open');
+          if (window.finishPayState) {
+            window.finishPayState.lastStep = '#checkout-step-lastname' + suffix;
+            window.finishPayState.isCheckoutOpen = false;
+          }
+        });
+      }
+
+      // ── Email Display befüllen ────────────────────────────
+      // Wird beim Öffnen des Steps gesetzt (siehe overrideCardButton)
+
+      // ── Weiter-Button ─────────────────────────────────────
       var newNextBtn = nextBtn.cloneNode(true);
       nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
 
@@ -1005,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (input)   input.classList.remove('is-error');
         if (errorEl) errorEl.style.display = 'none';
 
-        // Vollen Namen zusammensetzen und in name-changed Input schreiben
+        // Vollen Namen zusammensetzen
         var firstNameInput = document.getElementById('input-first-last-name' + suffix);
         var firstName      = firstNameInput ? firstNameInput.value.trim() : '';
         var fullName       = (firstName + ' ' + lastName).trim();
@@ -1013,10 +1037,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var nameChangedEl = document.getElementById('input-name-changed' + suffix);
         if (nameChangedEl) nameChangedEl.value = fullName;
 
-        // Avatar aktualisieren
         updateAvatarName(fullName, suffix);
 
-        // finishPayState aktualisieren
         if (window.finishPayState) {
           window.finishPayState.formData.name = fullName;
         }
@@ -1031,16 +1053,12 @@ document.addEventListener('DOMContentLoaded', function () {
           if (window.finishPayState) {
             window.finishPayState.currentStep = '#checkout-step-card' + suffix;
           }
-          // Karten-Element initialisieren
-          if (window.cardsInitialized !== undefined) {
-            // Direkt initCardElement aufrufen falls verfügbar
-            var evt = new CustomEvent('fp:initCard', { detail: { suffix: suffix } });
-            window.dispatchEvent(evt);
-          }
+          var evt = new CustomEvent('fp:initCard', { detail: { suffix: suffix } });
+          window.dispatchEvent(evt);
         }
       });
 
-      // Zurück-Button → zurück zu Step 3
+      // ── Zurück-Button ─────────────────────────────────────
       if (backBtn) {
         var newBackBtn = backBtn.cloneNode(true);
         backBtn.parentNode.replaceChild(newBackBtn, backBtn);
@@ -1105,6 +1123,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (firstNameInput) {
           var firstNameDisplay = document.getElementById('input-firstname-display' + suffix);
           if (firstNameDisplay) firstNameDisplay.textContent = firstNameInput.value.trim();
+        }
+
+        // Email in Lastname-Step anzeigen
+        var emailInput = document.getElementById('input-email' + suffix);
+        if (emailInput) {
+          var emailDisplay = document.getElementById('input-email-display' + suffix);
+          if (emailDisplay) emailDisplay.textContent = emailInput.value.trim();
         }
 
         lastnameStep.classList.add('is-open');
