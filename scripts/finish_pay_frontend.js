@@ -942,25 +942,25 @@ document.addEventListener('DOMContentLoaded', function () {
       var firstNameDisplay = document.getElementById('input-firstname-display' + suffix);
       var emailDisplay     = document.getElementById('input-email-display' + suffix);
 
-      if (firstNameDisplay && !firstNameDisplay.textContent.trim() && firstName) {
-        firstNameDisplay.textContent = firstName;
+      if (firstNameDisplay && !firstNameDisplay.value.trim() && firstName) {
+        firstNameDisplay.value = firstName;
       }
-      if (emailDisplay && !emailDisplay.textContent.trim() && email) {
-        emailDisplay.textContent = email;
+      if (emailDisplay && !emailDisplay.value.trim() && email) {
+        emailDisplay.value = email;
       }
 
       // Live-Sync: Wenn Name in Step 1 geändert → Display + Avatar aktualisieren
       if (nameInput) {
         nameInput.addEventListener('input', function () {
           updateAvatarName(nameInput.value.trim(), suffix);
-          if (firstNameDisplay) firstNameDisplay.textContent = nameInput.value.trim();
+          if (firstNameDisplay) firstNameDisplay.value = nameInput.value.trim();
         });
       }
 
       // Live-Sync: Wenn Email in Step 1 geändert → Email-Display aktualisieren
       if (emailInput) {
         emailInput.addEventListener('input', function () {
-          if (emailDisplay) emailDisplay.textContent = emailInput.value.trim();
+          if (emailDisplay) emailDisplay.value = emailInput.value.trim();
         });
       }
     });
@@ -1126,19 +1126,19 @@ document.addEventListener('DOMContentLoaded', function () {
         var current = document.querySelector('.is-open[id*="checkout-step"]');
         if (current) current.classList.remove('is-open');
 
-        // Vorname aus Step-1-Input in Lastname-Step übertragen
-        var firstNameInput = document.getElementById('input-first-last-name' + suffix);
-        if (firstNameInput) {
-          var firstNameDisplay = document.getElementById('input-firstname-display' + suffix);
-          if (firstNameDisplay) firstNameDisplay.textContent = firstNameInput.value.trim();
-        }
+        // Vorname + Email beim Öffnen immer neu setzen
+        var firstNameInput   = document.getElementById('input-first-last-name' + suffix);
+        var emailInput       = document.getElementById('input-email' + suffix);
+        var firstNameDisplay = document.getElementById('input-firstname-display' + suffix);
+        var emailDisplay     = document.getElementById('input-email-display' + suffix);
 
-        // Email in Lastname-Step anzeigen
-        var emailInput = document.getElementById('input-email' + suffix);
-        if (emailInput) {
-          var emailDisplay = document.getElementById('input-email-display' + suffix);
-          if (emailDisplay) emailDisplay.textContent = emailInput.value.trim();
-        }
+        var firstName = (firstNameInput && firstNameInput.value.trim())
+                        || localStorage.getItem('firstName') || '';
+        var email     = (emailInput && emailInput.value.trim())
+                        || localStorage.getItem('lc_useremail') || '';
+
+        if (firstNameDisplay) firstNameDisplay.value = firstName;
+        if (emailDisplay)     emailDisplay.value     = email;
 
         lastnameStep.classList.add('is-open');
         if (window.finishPayState) {
