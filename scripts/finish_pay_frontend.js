@@ -57,16 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-
-
-
-
-<style>.stripe-card-wrapper{width:100%}.StripeElement{width:100%}.fp-spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:fp-spin .8s linear infinite;margin-right:8px;vertical-align:middle}.fp-spinner.fp-spinner-dark{border-color:rgba(0,0,0,.2);border-top-color:#000}@keyframes fp-spin{to{transform:rotate(360deg)}}#checkout-step-1:not(.is-open),#checkout-step-1-mobile:not(.is-open),#checkout-step-2:not(.is-open),#checkout-step-2-mobile:not(.is-open),#checkout-step-3:not(.is-open),#checkout-step-3-mobile:not(.is-open),#checkout-step-card:not(.is-open),#checkout-step-card-mobile:not(.is-open),#checkout-step-4:not(.is-open),#checkout-step-4-mobile:not(.is-open),#checkout-change-avatar:not(.is-open),#checkout-change-avatar-mobile:not(.is-open){visibility:hidden;opacity:0;pointer-events:none}.is-open{visibility:visible!important;opacity:1!important;pointer-events:auto!important}#overlay-remove-product-1,#overlay-remove-product-1-mobile,#overlay-change-avatar,#overlay-change-avatar-mobile{display:none!important}#overlay-remove-product-1.is-open,#overlay-remove-product-1-mobile.is-open,#overlay-change-avatar.is-open,#overlay-change-avatar-mobile.is-open{display:flex!important}</style>
-<link rel="preconnect" href="https://js.stripe.com">
-<link rel="preconnect" href="https://cdn.api-finish.com">
-<link rel="preconnect" href="https://pay.api-finish.com">
-
-
   
 !function(){
   window.finishPayState = {
